@@ -13,7 +13,6 @@
       <div class="sidebar">
         <a href="#appearance" class="sidebar-link active">Appearance</a>
         <a href="#search" class="sidebar-link">Search</a>
-        <a href="#ai" class="sidebar-link">AI Config</a>
         <a href="#productivity" class="sidebar-link">Productivity</a>
         <a href="#data" class="sidebar-link">Data Management</a>
         <a href="/" class="sidebar-link">Back to Home</a>
@@ -117,29 +116,6 @@
               <input type="checkbox" id="toggleLocalOnly">
             </div>
           </div>
-        </div>
-        <div id="ai" class="settings-tab">
-          <h2>AI Config</h2>
-           <div class="settings-group">
-            <label>Multi-Model Support</label>
-            <select id="aiModelSelect">
-              <option value="gpt-4o">GPT-4o</option>
-              <option value="claude-3.5">Claude 3.5</option>
-               <option value="ollama">Local LLM (Ollama)</option>
-            </select>
-          </div>
-          <div class="settings-group">
-            <label>API Keys</label>
-            <input id="openaiKeyInput" type="password" placeholder="Paste OpenAI API key">
-             <input id="anthropicKeyInput" type="password" placeholder="Paste Anthropic API key">
-              <input id="geminiKeyInput" type="password" placeholder="Paste Gemini API key">
-              <button id="checkConnectionBtn">Check Connection</button>
-          </div>
-           <div class="settings-group">
-                <label>Prompt Library</label>
-                <div id="promptLibrary"></div>
-                <button id="addPromptBtn">Add Prompt</button>
-            </div>
         </div>
         <div id="productivity" class="settings-tab">
           <h2>Productivity</h2>
