@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', () => {
     // Sidebar navigation
     const sidebarLinks = document.querySelectorAll('.sidebar-link');
@@ -38,10 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
         openInNewTab: document.getElementById('toggleNewTab'),
         aiSearch: document.getElementById('toggleAiSearch'),
         localOnly: document.getElementById('toggleLocalOnly'),
-        aiModel: document.getElementById('aiModelSelect'),
-        openaiKey: document.getElementById('openaiKeyInput'),
-        anthropicKey: document.getElementById('anthropicKeyInput'),
-        geminiKey: document.getElementById('geminiKeyInput'),
         mustWinTask: document.getElementById('mustWinTask'),
         ambientSound: document.getElementById('ambientSound'),
         scratchpad: document.getElementById('scratchpad'),
@@ -78,18 +73,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 openInNewTab: settings.openInNewTab.checked,
                 aiSearch: settings.aiSearch.checked,
                 localOnly: settings.localOnly.checked,
-                aiModel: settings.aiModel.value,
                 mustWinTask: settings.mustWinTask.value,
                 ambientSound: settings.ambientSound.value,
                 scratchpad: settings.scratchpad.value,
                 customCSS: settings.customCSS.value,
             };
             localStorage.setItem('ituzeSettings', JSON.stringify(config));
-
-            // API keys are stored separately for security
-            if (settings.openaiKey.value) localStorage.setItem('openaiKey', settings.openaiKey.value);
-            if (settings.anthropicKey.value) localStorage.setItem('anthropicKey', settings.anthropicKey.value);
-            if (settings.geminiKey.value) localStorage.setItem('geminiKey', settings.geminiKey.value);
 
             // Raw JSON editor (Power User)
             if (document.activeElement !== settings.jsonEditor) {
@@ -124,17 +113,11 @@ document.addEventListener('DOMContentLoaded', () => {
             settings.openInNewTab.checked = config.openInNewTab !== false;
             settings.aiSearch.checked = config.aiSearch || false;
             settings.localOnly.checked = config.localOnly || false;
-            settings.aiModel.value = config.aiModel || 'gpt-4o';
             settings.mustWinTask.value = config.mustWinTask || '';
             settings.ambientSound.value = config.ambientSound || 'none';
             settings.scratchpad.value = config.scratchpad || '';
             settings.customCSS.value = config.customCSS || '';
             settings.jsonEditor.value = JSON.stringify(config, null, 2);
-
-            // Load API keys
-            settings.openaiKey.value = localStorage.getItem('openaiKey') || '';
-            settings.anthropicKey.value = localStorage.getItem('anthropicKey') || '';
-            settings.geminiKey.value = localStorage.getItem('geminiKey') || '';
 
         } catch (e) {
             console.error("Error loading settings:", e);
