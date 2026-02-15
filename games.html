@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Game Lab - Ituze</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="global-settings.js"></script>
+  <script src="theme.js"></script>
   <style>
     :root {
       --accent: #00ff9c;
@@ -170,24 +170,30 @@
     }
 
     iframe { width: 100%; height: 100%; border: none; }
+
+    .launcher-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateX(5px);
+      transition: all 0.2s ease;
+    }
   </style>
 </head>
 <body oncontextmenu="return false;">
+  <canvas id="matrix"></canvas>
 
   <a href="index.html" class="top-btn">Home</a>
 
-  <canvas id="matrix"></canvas>
   <div id="custom-menu">Open Game</div>
 
   <div id="menu">
     <h1 id="greeting">Welcome, Ituze</h1>
     <div class="button-container" id="gameList">
-      <div class="game-card" onclick="loadGame('https://ozgames.io/geometry-dash.embed')">Geometry Dash</div>
-      <div class="game-card" onclick="loadGame('https://geometrylitepc.io/slope-2.embed')">Slope 2</div>
-      <div class="game-card" onclick="loadGame('https://azgames.io/game/escape-road/')">Escape Road</div>
-      <div class="game-card" onclick="loadGame('https://azgames.io/game/traffic-road/')">Traffic Rider</div>
-      <div class="game-card" onclick="loadGame('https://azgames.io/smash-karts.embed')">Smash Karts</div>
-      <div class="game-card add-btn" onclick="addCustomGame()">+ Add Game</div>
+      <div class="game-card glass" onclick="loadGame('https://ozgames.io/geometry-dash.embed')">Geometry Dash</div>
+      <div class="game-card glass" onclick="loadGame('https://geometrylitepc.io/slope-2.embed')">Slope 2</div>
+      <div class="game-card glass" onclick="loadGame('https://azgames.io/game/escape-road/')">Escape Road</div>
+      <div class="game-card glass" onclick="loadGame('https://azgames.io/game/traffic-road/')">Traffic Rider</div>
+      <div class="game-card glass" onclick="loadGame('https://azgames.io/smash-karts.embed')">Smash Karts</div>
+      <div class="game-card add-btn glass" onclick="addCustomGame()">+ Add Game</div>
     </div>
   </div>
 
@@ -201,58 +207,6 @@
   </div>
 
   <script>
-    const canvas = document.getElementById("matrix");
-    const ctx = canvas.getContext("2d");
-    let matrixInterval = null;
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    resizeCanvas();
-    window.addEventListener("resize", () => {
-      resizeCanvas();
-      initDrops();
-    });
-
-    const chars = "ABCDEFGHIJKLMNOPRSTUVWXYZ0123456789";
-    const fontSize = 16;
-    let drops = [];
-
-    function initDrops() {
-      const columns = Math.floor(canvas.width / fontSize);
-      drops = Array.from({ length: columns }, () => 1);
-    }
-    initDrops();
-
-    function drawMatrix() {
-      ctx.fillStyle = "rgba(0,0,0,0.05)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--matrix-color").trim();
-      ctx.font = fontSize + "px monospace";
-
-      for (let i = 0; i < drops.length; i++) {
-        const text = chars[Math.floor(Math.random() * chars.length)];
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-        drops[i]++;
-      }
-    }
-
-    function startMatrix() { if (!matrixInterval) matrixInterval = setInterval(drawMatrix, 35); }
-    function stopMatrix() { clearInterval(matrixInterval); matrixInterval = null; }
-
-    window.addEventListener('matrixToggle', (e) => {
-        if (e.detail.enabled) {
-            startMatrix();
-        } else {
-            stopMatrix();
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-    });
-
-    document.addEventListener("visibilitychange", () => document.hidden ? stopMatrix() : startMatrix());
-
     function updateGreeting() {
       const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
       const userName = settings.userName || "Ituze";
@@ -265,10 +219,6 @@
     }
     
     document.addEventListener('DOMContentLoaded', () => {
-        const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
-        if (!settings.matrix) {
-            startMatrix();
-        }
         updateGreeting();
     });
 
@@ -286,7 +236,10 @@
       document.getElementById('menu').style.display = 'none';
       document.getElementById('stage').style.display = 'flex';
       document.querySelector('.top-btn').style.display = 'none';
-      stopMatrix();
+      const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
+      if (!settings.matrix) {
+        window.dispatchEvent(new CustomEvent('matrixToggle', { detail: { enabled: false } }));
+      }
     }
 
     function goBack() {
@@ -297,7 +250,7 @@
       
       const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
       if (!settings.matrix) {
-          startMatrix();
+          window.dispatchEvent(new CustomEvent('matrixToggle', { detail: { enabled: true } }));
       }
     }
 
@@ -315,7 +268,7 @@
       if (!url) return;
 
       const newCard = document.createElement("div");
-      newCard.className = "game-card";
+      newCard.className = "game-card glass";
       newCard.textContent = name;
       newCard.setAttribute("onclick", "loadGame('" + url + "')");
 
