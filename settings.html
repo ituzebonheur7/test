@@ -11,6 +11,18 @@
       body {
           color: white;
       }
+      .theme-presets {
+          display: flex;
+          gap: 10px;
+          margin-top: 10px;
+      }
+      .preset-btn {
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          border: 2px solid white;
+          cursor: pointer;
+      }
   </style>
 </head>
 <body class="settings-page">
@@ -29,7 +41,34 @@
       <h2>Theme</h2>
       <label for="themeColorPicker">Accent Color</label>
       <input type="color" id="themeColorPicker" class="big-input">
+       <div class="theme-presets">
+          <button class="preset-btn" style="background-color: #00ff9c;" data-color="#00ff9c"></button>
+          <button class="preset-btn" style="background-color: #007bff;" data-color="#007bff"></button>
+          <button class="preset-btn" style="background-color: #dc3545;" data-color="#dc3545"></button>
+          <button class="preset-btn" style="background-color: #ffc107;" data-color="#ffc107"></button>
+        </div>
       <p>This will change the color of buttons and glow on all pages.</p>
+    </div>
+
+    <div class="settings-card">
+        <h2>Search</h2>
+        <label for="searchEngineSelect">Search Engine</label>
+        <select id="searchEngineSelect" class="big-input">
+            <option value="google">Google</option>
+            <option value="bing">Bing</option>
+            <option value="duckduckgo">DuckDuckGo</option>
+            <option value="brave">Brave</option>
+            <option value="startpage">Startpage</option>
+            <option value="you">You.com</option>
+        </select>
+        <label for="suggestionsToggle">Global Suggestions</label>
+        <input type="checkbox" id="suggestionsToggle" class="big-checkbox">
+    </div>
+
+    <div class="settings-card">
+        <h2>Weather</h2>
+        <label for="weatherLocationInput">Manual Location (City, Country)</label>
+        <input type="text" id="weatherLocationInput" class="big-input">
     </div>
 
     <div class="settings-card">
@@ -44,7 +83,14 @@
         <button id="editShortcuts">Edit Shortcuts</button>
     </div>
 
+    <div class="settings-card">
+        <h2>Storage</h2>
+        <button id="resetStorage">Clear data & reset</button>
+    </div>
+
   </div>
+
+  <div id="toast" class="glass"></div>
 
   <script src="core.js"></script>
   <script>
@@ -52,29 +98,66 @@
       const matrixToggle = document.getElementById('matrixToggle');
       const userNameInput = document.getElementById('userNameInput');
       const editShortcuts = document.getElementById('editShortcuts');
+      const searchEngineSelect = document.getElementById('searchEngineSelect');
+      const suggestionsToggle = document.getElementById('suggestionsToggle');
+      const weatherLocationInput = document.getElementById('weatherLocationInput');
+      const resetStorage = document.getElementById('resetStorage');
+      const presetBtns = document.querySelectorAll('.preset-btn');
+
+      function showToast(message) {
+          const toast = document.getElementById('toast');
+          toast.textContent = message;
+          toast.classList.add('show');
+          setTimeout(() => {
+              toast.classList.remove('show');
+          }, 3000);
+      }
 
       function loadSettings() {
           const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
           themeColorPicker.value = settings.customColor || '#00ff9c';
           matrixToggle.checked = !settings.matrix;
           userNameInput.value = settings.userName || 'Ituze';
+          searchEngineSelect.value = settings.searchEngine || 'google';
+          suggestionsToggle.checked = settings.globalSuggestions !== false;
+          weatherLocationInput.value = settings.manualWeatherLocation || '';
       }
 
       function saveSettings() {
           const settings = {
               customColor: themeColorPicker.value,
               matrix: !matrixToggle.checked,
-              userName: userNameInput.value
+              userName: userNameInput.value,
+              searchEngine: searchEngineSelect.value,
+              globalSuggestions: suggestionsToggle.checked,
+              manualWeatherLocation: weatherLocationInput.value
           };
           localStorage.setItem('ituzeSettings', JSON.stringify(settings));
           applyGlobalSettings();
+          showToast('Settings saved!');
       }
       
       themeColorPicker.addEventListener('input', saveSettings);
       matrixToggle.addEventListener('change', saveSettings);
       userNameInput.addEventListener('input', saveSettings);
+      searchEngineSelect.addEventListener('change', saveSettings);
+      suggestionsToggle.addEventListener('change', saveSettings);
+      weatherLocationInput.addEventListener('input', saveSettings);
+      
+      presetBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+              themeColorPicker.value = btn.dataset.color;
+              saveSettings();
+          });
+      });
+
       editShortcuts.addEventListener('click', () => {
           window.open('index.html#edit-shortcuts', '_blank');
+      });
+
+      resetStorage.addEventListener('click', () => {
+          localStorage.clear();
+          window.location.reload();
       });
 
       window.addEventListener('load', loadSettings);
