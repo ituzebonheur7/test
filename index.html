@@ -29,6 +29,7 @@
       text-decoration: none;
       transition: 0.3s;
       z-index: 1200;
+      cursor: pointer;
     }
     .top-btn:hover {
       transform: scale(1.05);
@@ -132,6 +133,10 @@
       text-shadow: 0 0 12px var(--accent);
       transform: scale(1.06);
     }
+    .icon-btn.active {
+      color: var(--accent);
+      text-shadow: 0 0 12px var(--accent);
+    }
 
     .shortcuts {
       display: flex;
@@ -166,101 +171,48 @@
       border-color: var(--accent);
     }
 
-    .waffle-btn {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      border: none;
-      cursor: pointer;
-      background: transparent;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      z-index: 2000;
-      transition: 0.25s ease;
-      overflow: hidden;
-      transform-origin: center;
+    .social-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 3000;
     }
-
-    .waffle-btn::before {
-      content: "";
-      width: 22px;
-      height: 22px;
-      background-image: url('https://ssl.gstatic.com/gb/images/bar/al-icon.png');
-      background-size: cover;
-      opacity: 0.9;
-      transition: 0.25s ease;
+    .social-modal {
+        padding: 20px;
+        border-radius: 16px;
+        width: 300px;
+        text-align: center;
     }
-
-    .waffle-btn:hover {
-      transform: scale(1.1);
-      box-shadow: 0 0 18px var(--accent);
+    .social-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
     }
-
-    .glass-launcher {
-      position: fixed;
-      bottom: 80px;
-      left: 20px;
-      width: 360px;
-      max-height: 520px;
-      padding: 18px 18px 14px;
-      border-radius: 26px;
-      display: none;
-      z-index: 2100;
-      overflow: hidden;
+    .social-modal-title {
+        font-size: 1.5rem;
+        font-weight: 600;
     }
-
-    .glass-launcher.open {
-      display: block;
+    .social-modal-close {
+        font-size: 1.5rem;
+        cursor: pointer;
     }
-
-    .launcher-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      gap: 10px;
-    }
-
-    .launcher-title {
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: color-mix(in srgb, var(--accent) 70%, #e5e7eb);
-    }
-
-    .launcher-close {
-      border: none;
-      background: transparent;
-      color: #e5e7eb;
-      cursor: pointer;
-      font-size: 16px;
-      opacity: 0.7;
-      transition: 0.2s;
-    }
-    .launcher-close:hover {
-      opacity: 1;
-    }
-
-    .launcher-scroll {
-      max-height: 440px;
-      overflow-y: scroll;
-    }
-
-    .launcher-item:hover {
-      background: rgba(255, 255, 255, 0.1);
-      transform: translateX(5px);
-      transition: all 0.2s ease;
+    .social-links {
+        display:flex;
+        flex-direction:column;
+        gap:10px;
     }
 
     #weatherWedge {
       position: fixed;
       bottom: 20px;
-      left: 80px; 
+      left: 20px; 
       padding: 10px 12px;
       border-radius: 12px;
       color: var(--text-main);
@@ -278,9 +230,9 @@
 <body>
   <canvas id="matrix"></canvas>
 
-    <a id="topLink" href="index.html"
+    <a id="topLink"
      class="top-btn glass" rel="noopener noreferrer">
-    Dashboard
+    Ituze Bonheur
   </a>
 <a id="settingsToggle" class="glass" href="settings.html" aria-label="Open settings">⚙️</a>
 
@@ -289,23 +241,19 @@
     <div id="weatherText">Weather: --</div>
   </div>
 
-  <!-- Google Apps waffle button -->
-  <button id="openWaffle" class="waffle-btn glass" aria-label="Open apps launcher"></button>
-
-  <!-- Liquid glass Google Apps launcher -->
-  <div class="glass-launcher glass" id="waffleMenu" aria-hidden="true">
-    <div class="launcher-header">
-      <div class="launcher-title">Google Apps</div>
-      <button class="launcher-close" id="closeWaffle" aria-label="Close apps">✕</button>
-    </div>
-
-    <div class="launcher-scroll">
-        <ul class="launcher-list">
-            <li class="launcher-item"><a class="launcher-link" href="https://mail.google.com">Gmail</a></li>
-            <li class="launcher-item"><a class="launcher-link" href="https://www.google.com/calendar">Calendar</a></li>
-            <li class="launcher-item"><a class="launcher-link" href="https://www.google.com/drive/">Drive</a></li>
-        </ul>
-    </div>
+  <div id="socialModalOverlay" class="social-modal-overlay">
+      <div id="socialModal" class="social-modal glass">
+          <div class="social-modal-header">
+              <span class="social-modal-title">Ituze Bonheur</span>
+              <span id="socialModalClose" class="social-modal-close">&times;</span>
+          </div>
+          <div class="social-links">
+               <a class="shortcut glass" href="https://github.com/ituzebonheur7" target="_blank" rel="noopener noreferrer">GitHub</a>
+                  <a class="shortcut glass" href="https://www.facebook.com/ituzebonheur7" target="_blank" rel="noopener noreferrer">Facebook</a>
+                  <a class="shortcut glass" href="https://www.tiktok.com/@ituzebonheur7" target="_blank" rel="noopener noreferrer">TikTok</a>
+                  <a class="shortcut glass" href="https://www.instagram.com/ituzebonheur7" target="_blank" rel="noopener noreferrer">Instagram</a>
+          </div>
+      </div>
   </div>
 
   <div class="container">
@@ -317,6 +265,7 @@
         <input id="searchInput" placeholder="Search or type a URL" autocomplete="off" aria-label="Search or type a URL" />
         <div class="chrome-icons">
           <button id="voiceBtn" class="icon-btn" aria-pressed="false" aria-label="Toggle voice search">🎤</button>
+          <button id="aiModeBtn" class="icon-btn" aria-label="Toggle AI Mode">✨</button>
         </div>
       </div>
     </div>
@@ -336,6 +285,10 @@
       startpage: "https://www.startpage.com/do/search?q=",
       you: "https://you.com/search?q=",
     };
+    
+    const GOOGLE_AI_MODE_URL = (q) => `https://www.google.com/search?udm=50&aep=11&q=${encodeURIComponent(q)}`;
+
+    let isAiMode = false;
 
     function updateClock() {
       const now = new Date();
@@ -360,6 +313,7 @@
     updateGreeting();
 
     const searchInput = document.getElementById("searchInput");
+    const aiModeBtn = document.getElementById("aiModeBtn");
 
     function getEngineUrl() {
         const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
@@ -370,6 +324,11 @@
     function performSearch(query) {
       if (!query || !query.trim()) return;
       const trimmed = query.trim();
+
+      if (isAiMode) {
+        window.location.href = GOOGLE_AI_MODE_URL(trimmed);
+        return;
+      }
 
       if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
         window.location.href = trimmed;
@@ -385,6 +344,11 @@
         if (e.key === "Enter") {
             performSearch(searchInput.value);
         }
+    });
+
+    aiModeBtn.addEventListener("click", () => {
+        isAiMode = !isAiMode;
+        aiModeBtn.classList.toggle("active", isAiMode);
     });
 
     const voiceBtn = document.getElementById("voiceBtn");
@@ -426,20 +390,23 @@
       }
     });
 
-    const waffleBtn = document.getElementById("openWaffle");
-    const waffleMenu = document.getElementById("waffleMenu");
-    const closeWaffle = document.getElementById("closeWaffle");
+    const topLink = document.getElementById("topLink");
+    const socialModalOverlay = document.getElementById("socialModalOverlay");
+    const socialModalClose = document.getElementById("socialModalClose");
 
-    function openLauncher() {
-      waffleMenu.classList.add("open");
-    }
+    topLink.addEventListener("click", () => {
+        socialModalOverlay.style.display = "flex";
+    });
 
-    function closeLauncher() {
-      waffleMenu.classList.remove("open");
-    }
+    socialModalClose.addEventListener("click", () => {
+        socialModalOverlay.style.display = "none";
+    });
 
-    waffleBtn.addEventListener("click", openLauncher);
-    closeWaffle.addEventListener("click", closeLauncher);
+    socialModalOverlay.addEventListener("click", (e) => {
+        if (e.target === socialModalOverlay) {
+            socialModalOverlay.style.display = "none";
+        }
+    });
 
     async function fetchWeatherByCoordsSimple(lat, lon) {
       try {
@@ -492,10 +459,7 @@
 
     document.getElementById("weatherWedge").addEventListener("click", (e) => {
         e.stopPropagation();
-        const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
-        const manual = settings.manualWeatherLocation || "Kigali";
-        const url = `https://www.google.com/search?q=weather+${encodeURIComponent(manual)}`;
-        window.open(url, '_blank');
+        refreshWeatherWidget();
     });
 
     refreshWeatherWidget();
