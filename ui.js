@@ -41,10 +41,8 @@ function renderShortcuts() {
     document.getElementById("shortcutsRow3")
   ];
 
-  // Clear all rows
   rows.forEach(row => row.innerHTML = '');
 
-  // Distribute shortcuts across rows
   shortcuts.forEach((shortcut, index) => {
     const rowIndex = Math.floor(index / 5);
     if (rowIndex < rows.length) {
@@ -106,6 +104,7 @@ function saveEditedShortcuts() {
   saveShortcuts(shortcuts);
   renderShortcuts();
   closeShortcutEditor();
+  showToast("Shortcuts saved!");
 }
 
 function escapeHtml(str) {
@@ -120,10 +119,15 @@ function escapeHtml(str) {
     });
 }
 
-function openLinkWithPrefs(url) {
+function openLinkWithPrefs(url, inBackground = false) {
     const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
     const openInNewTab = settings.openInNewTab !== false;
-    window.open(url, openInNewTab ? '_blank' : '_self');
+    
+    if (openInNewTab || inBackground) {
+        window.open(url, '_blank');
+    } else {
+        window.location.href = url;
+    }
 }
 
 document.getElementById("closeShortcutEditor").addEventListener("click", closeShortcutEditor);
@@ -156,6 +160,7 @@ searchInput.addEventListener("input", () => {
 suggestionsBox.addEventListener("click", (e) => {
     if (e.target.classList.contains("suggestion-item")) {
         searchInput.value = e.target.textContent;
+        performSearch(searchInput.value);
         suggestionsBox.style.display = "none";
     }
 });
@@ -177,3 +182,52 @@ async function updateBatteryStatus() {
 
 setInterval(updateBatteryStatus, 5000);
 updateBatteryStatus();
+
+const waffleBtn = document.getElementById("openWaffle");
+const waffleMenu = document.getElementById("waffleMenu");
+const closeWaffle = document.getElementById("closeWaffle");
+
+waffleBtn.addEventListener("click", () => {
+    waffleMenu.classList.toggle("open");
+});
+
+closeWaffle.addEventListener("click", () => {
+    waffleMenu.classList.remove("open");
+});
+
+const contextMenu = document.getElementById("contextMenu");
+
+document.addEventListener("contextmenu", (e) => {
+    if (e.target.tagName === "A") {
+        e.preventDefault();
+        contextMenu.innerHTML = `
+            <div data-url="${e.target.href}" data-action="foreground">Open in new tab</div>
+            <div data-url="${e.target.href}" data-action="background">Open in background tab</div>
+        `;
+        contextMenu.style.top = `${e.clientY}px`;
+        contextMenu.style.left = `${e.clientX}px`;
+        contextMenu.style.display = "block";
+    }
+});
+
+contextMenu.addEventListener("click", (e) => {
+    const url = e.target.dataset.url;
+    const action = e.target.dataset.action;
+    if (url && action) {
+        openLinkWithPrefs(url, action === "background");
+        contextMenu.style.display = "none";
+    }
+});
+
+document.addEventListener("click", () => {
+    contextMenu.style.display = "none";
+});
+
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
