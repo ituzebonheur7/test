@@ -7,47 +7,75 @@
   <link rel="icon" href="settings.png" type="image/png">
   <link rel="stylesheet" href="shared.css">
   <link rel="stylesheet" href="settings.css">
+  <style>
+      body {
+          color: white;
+      }
+  </style>
 </head>
 <body class="settings-page">
   <canvas id="matrix"></canvas>
   
   <div class="settings-container glass">
     <h1>System Settings</h1>
+
+    <div class="settings-card">
+        <h2>General</h2>
+        <label for="userNameInput">User Name</label>
+        <input type="text" id="userNameInput" class="big-input">
+    </div>
     
     <div class="settings-card">
+      <h2>Theme</h2>
       <label for="themeColorPicker">Accent Color</label>
       <input type="color" id="themeColorPicker" class="big-input">
       <p>This will change the color of buttons and glow on all pages.</p>
     </div>
 
     <div class="settings-card">
+      <h2>Background</h2>
       <label for="matrixToggle">Matrix Background</label>
       <input type="checkbox" id="matrixToggle" class="big-checkbox">
       <span>Enable Matrix Rain across all pages</span>
     </div>
 
-    <button onclick="saveAll()" class="save-btn">Apply Changes</button>
+    <div class="settings-card">
+        <h2>Shortcuts</h2>
+        <button id="editShortcuts">Edit Shortcuts</button>
+    </div>
+
   </div>
 
   <script src="core.js"></script>
   <script>
       const themeColorPicker = document.getElementById('themeColorPicker');
       const matrixToggle = document.getElementById('matrixToggle');
+      const userNameInput = document.getElementById('userNameInput');
+      const editShortcuts = document.getElementById('editShortcuts');
 
       function loadSettings() {
           const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
           themeColorPicker.value = settings.customColor || '#00ff9c';
           matrixToggle.checked = !settings.matrix;
+          userNameInput.value = settings.userName || 'Ituze';
       }
 
-      function saveAll() {
-          const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
-          settings.customColor = themeColorPicker.value;
-          settings.matrix = !matrixToggle.checked;
+      function saveSettings() {
+          const settings = {
+              customColor: themeColorPicker.value,
+              matrix: !matrixToggle.checked,
+              userName: userNameInput.value
+          };
           localStorage.setItem('ituzeSettings', JSON.stringify(settings));
           applyGlobalSettings();
-          alert('Settings saved!');
       }
+      
+      themeColorPicker.addEventListener('input', saveSettings);
+      matrixToggle.addEventListener('change', saveSettings);
+      userNameInput.addEventListener('input', saveSettings);
+      editShortcuts.addEventListener('click', () => {
+          window.open('index.html#edit-shortcuts', '_blank');
+      });
 
       window.addEventListener('load', loadSettings);
   </script>
