@@ -4,41 +4,15 @@
   <meta charset="UTF-8">
   <title>Game Lab - Ituze</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="theme.js"></script>
+  <link rel="stylesheet" href="shared.css">
   <style>
-    :root {
-      --accent: #00ff9c;
-      --matrix-color: #00ff9c;
-      --glass-bg: rgba(0,0,0,0.25);
-      --glass-border: rgba(255,255,255,0.15);
-      --text-main: #e5e7eb;
-      --glass-blur: 26px;
-    }
-
-    * { box-sizing: border-box; }
-
-    /* Hide scrollbars */
-    html, body, * {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-    *::-webkit-scrollbar { display: none !important; width: 0; height: 0; }
-
     body {
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
       background: #020617;
-      background-image: radial-gradient(circle at top, #0b1120 0%, #020617 55%, #000 100%);
-      background-attachment: fixed;
       color: var(--text-main);
       overflow: hidden;
       user-select: none;
-    }
-
-    canvas {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
     }
 
     .top-btn, .btn {
@@ -47,8 +21,8 @@
       font-weight: 600;
       color: var(--accent);
       background: var(--glass-bg);
-      backdrop-filter: blur(var(--glass-blur, 26px));
-      -webkit-backdrop-filter: blur(var(--glass-blur, 26px));
+      backdrop-filter: blur(26px);
+      -webkit-backdrop-filter: blur(26px);
       border: 1px solid var(--glass-border);
       border-radius: 25px;
       text-decoration: none;
@@ -102,12 +76,8 @@
     }
 
     .game-card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(var(--glass-blur, 26px));
-      -webkit-backdrop-filter: blur(var(--glass-blur, 26px));
       width: 300px;
       padding: 35px 0;
-      border: 1px solid var(--glass-border);
       border-radius: 16px;
       cursor: pointer;
       transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -171,11 +141,6 @@
 
     iframe { width: 100%; height: 100%; border: none; }
 
-    .launcher-item:hover {
-      background: rgba(255, 255, 255, 0.1);
-      transform: translateX(5px);
-      transition: all 0.2s ease;
-    }
   </style>
 </head>
 <body oncontextmenu="return false;">
@@ -206,6 +171,7 @@
     <iframe id="gameFrame" src="" allow="fullscreen; autoplay; camera; microphone; clipboard-write" sandbox="allow-forms allow-scripts allow-same-origin allow-popups"></iframe>
   </div>
 
+  <script src="core.js"></script>
   <script>
     function updateGreeting() {
       const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
@@ -236,10 +202,8 @@
       document.getElementById('menu').style.display = 'none';
       document.getElementById('stage').style.display = 'flex';
       document.querySelector('.top-btn').style.display = 'none';
-      const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
-      if (!settings.matrix) {
-        window.dispatchEvent(new CustomEvent('matrixToggle', { detail: { enabled: false } }));
-      }
+      const canvas = document.getElementById('matrix');
+      if (canvas) canvas.style.display = 'none';
     }
 
     function goBack() {
@@ -247,11 +211,8 @@
       document.getElementById('menu').style.display = 'flex';
       document.getElementById('stage').style.display = 'none';
       document.querySelector('.top-btn').style.display = 'flex';
-      
-      const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
-      if (!settings.matrix) {
-          window.dispatchEvent(new CustomEvent('matrixToggle', { detail: { enabled: true } }));
-      }
+      const canvas = document.getElementById('matrix');
+      if (canvas) canvas.style.display = 'block';
     }
 
     function toggleFullscreen() {
@@ -298,6 +259,8 @@
 
     customMenu.onclick = () => { loadGame(currentTargetUrl); customMenu.style.display = 'none'; };
     document.addEventListener('click', () => customMenu.style.display = 'none');
+
+    window.onload = applyGlobalSettings;
   </script>
 </body>
 </html>

@@ -4,179 +4,52 @@
   <meta charset="utf-8" />
   <title>Settings - Ituze</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" href="settings.png" type="image/png">
+  <link rel="stylesheet" href="shared.css">
   <link rel="stylesheet" href="settings.css">
-  <script src="theme.js"></script>
 </head>
-<body>
+<body class="settings-page">
   <canvas id="matrix"></canvas>
-  <a href="index.html" class="top-btn glass">← Back to Dashboard</a>
-  <div class="settings-container">
-    <h1>Settings</h1>
-    <div class="settings-grid">
-      <div class="sidebar">
-        <a href="#appearance" class="sidebar-link active">Appearance</a>
-        <a href="#search" class="sidebar-link">Search</a>
-        <a href="#productivity" class="sidebar-link">Productivity</a>
-        <a href="#data" class="sidebar-link">Data Management</a>
-      </div>
-      <div class="settings-content">
-        <div id="appearance" class="settings-tab active">
-          <h2>Appearance</h2>
-          <div class="settings-group">
-            <label>Your Name</label>
-            <input id="userNameInput" type="text" placeholder="Ituze">
-          </div>
-          <div class="settings-group">
-            <label>Theme Color</label>
-            <select id="themeSelect">
-              <option value="green">Green</option>
-              <option value="blue">Blue</option>
-              <option value="red">Red</option>
-              <option value="yellow">Yellow</option>
-              <option value="custom">Custom</option>
-            </select>
-            <div id="customColorPicker" class="custom-color-row" style="display:none;">
-              <input id="customColorInput" type="color" value="#00ff9c">
-              <input id="customColorHex" type="text" placeholder="#00ff9c">
-            </div>
-          </div>
-          <div class="settings-group">
-            <label>Visuals</label>
-            <div class="settings-row">
-              <span>Disable Matrix</span>
-              <input type="checkbox" id="toggleMatrix">
-            </div>
-             <div class="settings-row">
-              <span>Dynamic Backgrounds (Unsplash)</span>
-              <input type="checkbox" id="toggleDynamicBackground">
-            </div>
-            <div class="settings-row">
-              <label>Glassmorphism blur intensity</label>
-               <input type="range" id="glassmorphismSlider" min="0" max="50" value="26">
-            </div>
-          </div>
-           <div class="settings-group">
-            <label>Layout Engine (Drag & Drop)</label>
-            <div class="settings-row">
-              <span>Enable Drag & Drop</span>
-              <input type="checkbox" id="toggleDragDrop">
-            </div>
-          </div>
-          <div class="settings-group">
-            <label>Google Apps Launcher</label>
-            <div class="settings-row">
-              <span>Transparency</span>
-              <select id="launcherOpacitySelect">
-                <option value="0.24">Subtle</option>
-                <option value="0.32">Balanced</option>
-                <option value="0.42">Solid</option>
-              </select>
-            </div>
-            <div class="settings-row">
-              <span>Compact list density</span>
-              <input type="checkbox" id="launcherCompact">
-            </div>
-          </div>
-        </div>
-        <div id="search" class="settings-tab">
-          <h2>Search</h2>
-          <div class="settings-group">
-            <label>Default Search Engine</label>
-            <select id="engineSelect">
-              <option value="google">Google</option>
-              <option value="bing">Bing</option>
-              <option value="duckduckgo">DuckDuckGo</option>
-              <option value="brave">Brave</option>
-              <option value="startpage">Startpage</option>
-              <option value="you">You.com</option>
-            </select>
-          </div>
-          <div class="settings-group">
-            <label>Search Options</label>
-            <div class="settings-row">
-              <span>Show suggestions</span>
-              <input type="checkbox" id="toggleSuggestions">
-            </div>
-            <div class="settings-row">
-              <span>Auto-search after voice</span>
-              <input type="checkbox" id="toggleVoiceAuto">
-            </div>
-            <div class="settings-row">
-              <span>Keyboard shortcuts</span>
-              <input type="checkbox" id="toggleKeyboard">
-            </div>
-            <div class="settings-row">
-              <span>Open links in new tab (default)</span>
-              <input type="checkbox" id="toggleNewTab">
-            </div>
-             <div class="settings-row">
-              <span>AI Search (Summarize Results)</span>
-              <input type="checkbox" id="toggleAiSearch">
-            </div>
-            <div class="settings-row">
-              <span>Local-only suggestions (privacy)</span>
-              <input type="checkbox" id="toggleLocalOnly">
-            </div>
-          </div>
-        </div>
-        <div id="productivity" class="settings-tab">
-          <h2>Productivity</h2>
-           <div class="settings-group">
-            <label>"Must-Win" Task</label>
-            <input type="text" id="mustWinTask" placeholder="What is your one goal for today?">
-          </div>
-            <div class="settings-group">
-                <label>Pomodoro/Focus Timer</label>
-                <div id="pomodoro-timer">
-                    <div id="pomodoro-time">25:00</div>
-                    <button id="pomodoro-start">Start</button>
-                    <button id="pomodoro-pause">Pause</button>
-                    <button id="pomodoro-reset">Reset</button>
-                </div>
-            </div>
-            <div class="settings-group">
-                <label>Ambient Soundscapes</label>
-                <select id="ambientSound">
-                    <option value="none">None</option>
-                    <option value="lofi">Lo-Fi</option>
-                    <option value="rain">Rain</option>
-                    <option value="whitenoise">White Noise</option>
-                </select>
-            </div>
-            <div class="settings-group">
-                <label>Quick Notes (Scratchpad)</label>
-                <textarea id="scratchpad" placeholder="Jot down some notes..."></textarea>
-            </div>
-        </div>
-        <div id="data" class="settings-tab">
-          <h2>Data Management</h2>
-          <div class="settings-group">
-            <label>Storage</label>
-            <div>
-              <button id="resetStorage">Clear data & reset</button>
-               <button id="syncToCloud">Sync to Cloud (Firebase)</button>
-            </div>
-          </div>
-           <div class="settings-group">
-                <label>Power User Features</label>
-                <div class="power-user-features">
-                    <label>Custom CSS</label>
-                    <textarea id="customCSS" placeholder="Enter your own CSS here..."></textarea>
-                    <label>JSON Editor</label>
-                    <textarea id="jsonEditor" placeholder="Edit your raw configuration..."></textarea>
-                </div>
-            </div>
-        </div>
-      </div>
+  
+  <div class="settings-container glass">
+    <h1>System Settings</h1>
+    
+    <div class="settings-card">
+      <label for="themeColorPicker">Accent Color</label>
+      <input type="color" id="themeColorPicker" class="big-input">
+      <p>This will change the color of buttons and glow on all pages.</p>
     </div>
-     <div id="live-preview">
-        <h3>Live Preview</h3>
-        <div class="mini-dashboard">
-            <div class="mini-clock">10:30:45</div>
-            <div class="mini-greeting">Good morning, Ituze</div>
-        </div>
+
+    <div class="settings-card">
+      <label for="matrixToggle">Matrix Background</label>
+      <input type="checkbox" id="matrixToggle" class="big-checkbox">
+      <span>Enable Matrix Rain across all pages</span>
     </div>
+
+    <button onclick="saveAll()" class="save-btn">Apply Changes</button>
   </div>
-  <script src="settings.js"></script>
+
+  <script src="core.js"></script>
+  <script>
+      const themeColorPicker = document.getElementById('themeColorPicker');
+      const matrixToggle = document.getElementById('matrixToggle');
+
+      function loadSettings() {
+          const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
+          themeColorPicker.value = settings.customColor || '#00ff9c';
+          matrixToggle.checked = !settings.matrix;
+      }
+
+      function saveAll() {
+          const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
+          settings.customColor = themeColorPicker.value;
+          settings.matrix = !matrixToggle.checked;
+          localStorage.setItem('ituzeSettings', JSON.stringify(settings));
+          applyGlobalSettings();
+          alert('Settings saved!');
+      }
+
+      window.addEventListener('load', loadSettings);
+  </script>
 </body>
 </html>
