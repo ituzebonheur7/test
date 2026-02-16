@@ -7,27 +7,12 @@
   <link rel="icon" href="settings.png" type="image/png">
   <link rel="stylesheet" href="shared.css">
   <link rel="stylesheet" href="settings.css">
-  <style>
-      body {
-          color: white;
-      }
-      .theme-presets {
-          display: flex;
-          gap: 10px;
-          margin-top: 10px;
-      }
-      .preset-btn {
-          width: 30px;
-          height: 30px;
-          border-radius: 50%;
-          border: 2px solid white;
-          cursor: pointer;
-      }
-  </style>
 </head>
 <body class="settings-page">
   <canvas id="matrix"></canvas>
-  
+
+  <a href="index.html" class="top-btn glass">Home</a>
+
   <div class="settings-container glass">
     <h1>System Settings</h1>
 
@@ -36,7 +21,7 @@
         <label for="userNameInput">User Name</label>
         <input type="text" id="userNameInput" class="big-input">
     </div>
-    
+
     <div class="settings-card">
       <h2>Theme</h2>
       <label for="themeColorPicker">Accent Color</label>
@@ -80,7 +65,7 @@
 
     <div class="settings-card">
         <h2>Shortcuts</h2>
-        <button id="editShortcuts">Edit Shortcuts</button>
+        <button id="editShortcutsBtn">Edit Shortcuts</button>
     </div>
 
     <div class="settings-card">
@@ -90,77 +75,7 @@
 
   </div>
 
-  <div id="toast" class="glass"></div>
-
   <script src="core.js"></script>
-  <script>
-      const themeColorPicker = document.getElementById('themeColorPicker');
-      const matrixToggle = document.getElementById('matrixToggle');
-      const userNameInput = document.getElementById('userNameInput');
-      const editShortcuts = document.getElementById('editShortcuts');
-      const searchEngineSelect = document.getElementById('searchEngineSelect');
-      const suggestionsToggle = document.getElementById('suggestionsToggle');
-      const weatherLocationInput = document.getElementById('weatherLocationInput');
-      const resetStorage = document.getElementById('resetStorage');
-      const presetBtns = document.querySelectorAll('.preset-btn');
-
-      function showToast(message) {
-          const toast = document.getElementById('toast');
-          toast.textContent = message;
-          toast.classList.add('show');
-          setTimeout(() => {
-              toast.classList.remove('show');
-          }, 3000);
-      }
-
-      function loadSettings() {
-          const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
-          themeColorPicker.value = settings.customColor || '#00ff9c';
-          matrixToggle.checked = !settings.matrix;
-          userNameInput.value = settings.userName || 'Ituze';
-          searchEngineSelect.value = settings.searchEngine || 'google';
-          suggestionsToggle.checked = settings.globalSuggestions !== false;
-          weatherLocationInput.value = settings.manualWeatherLocation || '';
-      }
-
-      function saveSettings() {
-          const settings = {
-              customColor: themeColorPicker.value,
-              matrix: !matrixToggle.checked,
-              userName: userNameInput.value,
-              searchEngine: searchEngineSelect.value,
-              globalSuggestions: suggestionsToggle.checked,
-              manualWeatherLocation: weatherLocationInput.value
-          };
-          localStorage.setItem('ituzeSettings', JSON.stringify(settings));
-          applyGlobalSettings();
-          showToast('Settings saved!');
-      }
-      
-      themeColorPicker.addEventListener('input', saveSettings);
-      matrixToggle.addEventListener('change', saveSettings);
-      userNameInput.addEventListener('input', saveSettings);
-      searchEngineSelect.addEventListener('change', saveSettings);
-      suggestionsToggle.addEventListener('change', saveSettings);
-      weatherLocationInput.addEventListener('input', saveSettings);
-      
-      presetBtns.forEach(btn => {
-          btn.addEventListener('click', () => {
-              themeColorPicker.value = btn.dataset.color;
-              saveSettings();
-          });
-      });
-
-      editShortcuts.addEventListener('click', () => {
-          window.open('index.html#edit-shortcuts', '_blank');
-      });
-
-      resetStorage.addEventListener('click', () => {
-          localStorage.clear();
-          window.location.reload();
-      });
-
-      window.addEventListener('load', loadSettings);
-  </script>
+  <script src="settings.js"></script>
 </body>
 </html>

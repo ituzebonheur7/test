@@ -1,4 +1,3 @@
-
 const SHORTCUTS_KEY = "userShortcuts";
 const DEFAULT_SHORTCUTS = [
   { name: "GitHub", url: "https://github.com" },
@@ -15,7 +14,7 @@ const DEFAULT_SHORTCUTS = [
   { name: "Gemini", url: "https://gemini.google.com" },
   { name: "WhatsApp", url: "https://web.whatsapp.com" },
   { name: "Yahoo", url: "https://yahoo.com" },
-  { name: "GitHub Copilot", url: "https://github.com/copilot" }
+  { name: "Games", url: "games.html" }
 ];
 
 function loadShortcuts() {
@@ -30,7 +29,9 @@ function loadShortcuts() {
 function saveShortcuts(shortcuts) {
   try {
     localStorage.setItem(SHORTCUTS_KEY, JSON.stringify(shortcuts));
-  } catch {}
+  } catch (e) {
+    console.error("Failed to save shortcuts:", e);
+  }
 }
 
 function renderShortcuts() {
@@ -39,9 +40,9 @@ function renderShortcuts() {
     document.getElementById("shortcutsRow1"),
     document.getElementById("shortcutsRow2"),
     document.getElementById("shortcutsRow3")
-  ];
+  ].filter(Boolean);
 
-  rows.forEach(row => row.innerHTML = '');
+  rows.forEach(row => { row.innerHTML = '' });
 
   shortcuts.forEach((shortcut, index) => {
     const rowIndex = Math.floor(index / 5);
@@ -50,32 +51,43 @@ function renderShortcuts() {
       a.className = 'shortcut glass';
       a.href = shortcut.url;
       a.textContent = shortcut.name;
-      a.addEventListener('click', (e) => {
-        e.preventDefault();
-        openLinkWithPrefs(shortcut.url);
-      });
       rows[rowIndex].appendChild(a);
     }
   });
 }
 
 function openShortcutEditor() {
-  const shortcuts = loadShortcuts();
-  const editor = document.getElementById('shortcutEditor');
-  editor.innerHTML = '';
+    const editor = document.getElementById('shortcutEditor');
+    if (!editor) return;
+    editor.innerHTML = ''; // Clear previous content
 
-  shortcuts.forEach((shortcut, index) => {
+    const shortcuts = loadShortcuts();
+    shortcuts.forEach((shortcut, index) => {
+        editor.appendChild(createShortcutInputRow(shortcut, index));
+    });
+
+    document.getElementById('shortcutModal').classList.add('open');
+}
+
+function createShortcutInputRow(shortcut = { name: '', url: '' }, index = -1) {
     const div = document.createElement('div');
-    div.className = 'shortcut-item';
+    div.className = 'shortcut-edit-item';
     div.innerHTML = `
-      <input type="text" placeholder="Name" value="${escapeHtml(shortcut.name)}" data-index="${index}" data-field="name">
-      <input type="text" placeholder="URL" value="${escapeHtml(shortcut.url)}" data-index="${index}" data-field="url">
-      <button class="remove-shortcut" data-index="${index}">×</button>
+        <input type="text" placeholder="Name" value="${escapeHtml(shortcut.name)}" class="shortcut-name-input">
+        <input type="text" placeholder="URL" value="${escapeHtml(shortcut.url)}" class="shortcut-url-input">
+        <button class="remove-shortcut-btn">×</button>
     `;
-    editor.appendChild(div);
-  });
+    div.querySelector('.remove-shortcut-btn').addEventListener('click', () => {
+        div.remove();
+    });
+    return div;
+}
 
-  document.getElementById('shortcutModal').classList.add('open');
+function addNewShortcutToEditor() {
+    const editor = document.getElementById('shortcutEditor');
+    if (editor) {
+        editor.appendChild(createShortcutInputRow());
+    }
 }
 
 function closeShortcutEditor() {
@@ -83,46 +95,35 @@ function closeShortcutEditor() {
 }
 
 function saveEditedShortcuts() {
-  const inputs = document.querySelectorAll('#shortcutEditor input');
+  const editor = document.getElementById('shortcutEditor');
+  const items = editor.querySelectorAll('.shortcut-edit-item');
   const shortcuts = [];
-  const newShortcuts = [];
-  
-  inputs.forEach(input => {
-      const index = input.dataset.index;
-      if (!newShortcuts[index]) {
-          newShortcuts[index] = {};
-      }
-      newShortcuts[index][input.dataset.field] = input.value;
-  });
-  
-  newShortcuts.forEach(shortcut => {
-      if (shortcut.name && shortcut.url) {
-          shortcuts.push(shortcut);
-      }
+  items.forEach(item => {
+    const name = item.querySelector('.shortcut-name-input').value;
+    const url = item.querySelector('.shortcut-url-input').value;
+    if (name && url) {
+      shortcuts.push({ name, url });
+    }
   });
 
   saveShortcuts(shortcuts);
   renderShortcuts();
   closeShortcutEditor();
-  showToast("Shortcuts saved!");
 }
 
 function escapeHtml(str) {
-    return str.replace(/[&<>"']/g, function(match) {
-        return {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            ''': '&#39;'
-        }[match];
-    });
+    return str.replace(/[&<>"']/g, (match) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[match]));
 }
 
 function openLinkWithPrefs(url, inBackground = false) {
     const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
     const openInNewTab = settings.openInNewTab !== false;
-    
     if (openInNewTab || inBackground) {
         window.open(url, '_blank');
     } else {
@@ -130,104 +131,140 @@ function openLinkWithPrefs(url, inBackground = false) {
     }
 }
 
-document.getElementById("closeShortcutEditor").addEventListener("click", closeShortcutEditor);
-document.getElementById("saveShortcuts").addEventListener("click", saveEditedShortcuts);
-document.addEventListener("DOMContentLoaded", renderShortcuts);
-
-const searchInput = document.getElementById("searchInput");
-const suggestionsBox = document.getElementById("suggestions");
-
-searchInput.addEventListener("input", () => {
-    const query = searchInput.value;
-    if (query.startsWith(":calc")) {
-        const expression = query.substring(5).trim();
-        try {
-            const result = eval(expression);
-            suggestionsBox.innerHTML = `<div class="suggestion-item">${result}</div>`;
-            suggestionsBox.style.display = "block";
-        } catch (error) {
-            suggestionsBox.style.display = "none";
-        }
-    } else if (query.startsWith("wiki:")) {
-        const searchTerm = query.substring(5).trim();
-        suggestionsBox.innerHTML = `<div class="suggestion-item">Search Wikipedia for "${searchTerm}"</div>`;
-        suggestionsBox.style.display = "block";
-    } else {
-        suggestionsBox.style.display = "none";
+function calculateExpression(expression) {
+    // Sanitize to prevent malicious code injection, allowing only numbers, operators, and parentheses
+    const sanitizedExpression = expression.replace(/[^-()\d/*+.]/g, '');
+    if (sanitizedExpression !== expression) {
+        throw new Error("Invalid characters in expression");
     }
-});
-
-suggestionsBox.addEventListener("click", (e) => {
-    if (e.target.classList.contains("suggestion-item")) {
-        searchInput.value = e.target.textContent;
-        performSearch(searchInput.value);
-        suggestionsBox.style.display = "none";
+    // Use the Function constructor for safer evaluation than eval()
+    try {
+        return new Function('return ' + sanitizedExpression)();
+    } catch (error) {
+        throw new Error("Invalid mathematical expression");
     }
-});
-
-
-async function updateBatteryStatus() {
-  if ('getBattery' in navigator) {
-    const battery = await navigator.getBattery();
-    const batteryLevel = Math.round(battery.level * 100);
-    const batteryLevelBar = document.getElementById('battery-level-bar');
-    const batteryText = document.getElementById('battery-text');
-
-    batteryLevelBar.style.width = `${batteryLevel}%`;
-    batteryText.textContent = `Battery: ${batteryLevel}%`;
-  } else {
-    document.getElementById('battery').style.display = 'none';
-  }
 }
 
-setInterval(updateBatteryStatus, 5000);
-updateBatteryStatus();
-
-const waffleBtn = document.getElementById("openWaffle");
-const waffleMenu = document.getElementById("waffleMenu");
-const closeWaffle = document.getElementById("closeWaffle");
-
-waffleBtn.addEventListener("click", () => {
-    waffleMenu.classList.toggle("open");
-});
-
-closeWaffle.addEventListener("click", () => {
-    waffleMenu.classList.remove("open");
-});
-
-const contextMenu = document.getElementById("contextMenu");
-
-document.addEventListener("contextmenu", (e) => {
-    if (e.target.tagName === "A") {
-        e.preventDefault();
-        contextMenu.innerHTML = `
-            <div data-url="${e.target.href}" data-action="foreground">Open in new tab</div>
-            <div data-url="${e.target.href}" data-action="background">Open in background tab</div>
-        `;
-        contextMenu.style.top = `${e.clientY}px`;
-        contextMenu.style.left = `${e.clientX}px`;
-        contextMenu.style.display = "block";
+// --- Event Listeners ---
+document.addEventListener('DOMContentLoaded', () => {
+    renderShortcuts();
+    updateBatteryStatus();
+    if (typeof refreshWeatherWidget === 'function') {
+        refreshWeatherWidget();
     }
-});
 
-contextMenu.addEventListener("click", (e) => {
-    const url = e.target.dataset.url;
-    const action = e.target.dataset.action;
-    if (url && action) {
-        openLinkWithPrefs(url, action === "background");
-        contextMenu.style.display = "none";
+    // Search
+    const searchInput = document.getElementById("searchInput");
+    const suggestionsBox = document.getElementById("suggestions");
+
+    if (searchInput) {
+        searchInput.addEventListener("input", () => {
+            const query = searchInput.value;
+            if (query.startsWith(":calc")) {
+                const expression = query.substring(5).trim();
+                try {
+                    const result = calculateExpression(expression);
+                    suggestionsBox.innerHTML = `<div class="suggestion-item">${result}</div>`;
+                    suggestionsBox.style.display = "block";
+                } catch (error) {
+                    suggestionsBox.style.display = "none";
+                }
+            } else if (query.startsWith("wiki:")) {
+                const searchTerm = query.substring(5).trim();
+                suggestionsBox.innerHTML = `<div class="suggestion-item">Search Wikipedia for "${searchTerm}"</div>`;
+                suggestionsBox.style.display = "block";
+            } else {
+                suggestionsBox.style.display = "none";
+            }
+        });
     }
+
+    if (suggestionsBox) {
+        suggestionsBox.addEventListener("click", (e) => {
+            if (e.target.classList.contains("suggestion-item")) {
+                searchInput.value = e.target.textContent;
+                if (typeof performSearch === 'function') {
+                    performSearch(searchInput.value);
+                }
+                suggestionsBox.style.display = "none";
+            }
+        });
+    }
+
+    // Shortcut Editor
+    document.getElementById("editShortcutsBtn")?.addEventListener("click", openShortcutEditor);
+    document.getElementById("closeShortcutEditor")?.addEventListener("click", closeShortcutEditor);
+    document.getElementById("saveShortcuts")?.addEventListener("click", saveEditedShortcuts);
+    document.getElementById("addShortcutBtn")?.addEventListener("click", addNewShortcutToEditor);
+
+    // Waffle Menu
+    const waffleBtn = document.getElementById("openWaffle");
+    const waffleMenu = document.getElementById("waffleMenu");
+    const closeWaffle = document.getElementById("closeWaffle");
+
+    waffleBtn?.addEventListener("click", () => waffleMenu?.classList.toggle("open"));
+    closeWaffle?.addEventListener("click", () => waffleMenu?.classList.remove("open"));
+
+    // Global Click Handler
+    document.addEventListener("click", (e) => {
+        // Close context menu
+        document.getElementById("contextMenu").style.display = "none";
+        
+        // Close waffle menu if click is outside
+        if (waffleMenu && !waffleBtn.contains(e.target) && !waffleMenu.contains(e.target)) {
+            waffleMenu.classList.remove("open");
+        }
+
+        // Handle shortcut clicks
+        const shortcut = e.target.closest('.shortcut');
+        if (shortcut) {
+            e.preventDefault();
+            openLinkWithPrefs(shortcut.href);
+        }
+    });
+
+    // Context Menu
+    const contextMenu = document.getElementById("contextMenu");
+    document.addEventListener("contextmenu", (e) => {
+        const link = e.target.closest('a.shortcut');
+        if (link) {
+            e.preventDefault();
+            contextMenu.innerHTML = `
+                <div data-url="${link.href}" data-action="foreground">Open in new tab</div>
+                <div data-url="${link.href}" data-action="background">Open in background tab</div>
+            `;
+            contextMenu.style.top = `${e.clientY}px`;
+            contextMenu.style.left = `${e.clientX}px`;
+            contextMenu.style.display = "block";
+        }
+    });
+
+    contextMenu?.addEventListener("click", (e) => {
+        const url = e.target.dataset.url;
+        const action = e.target.dataset.action;
+        if (url && action) {
+            openLinkWithPrefs(url, action === "background");
+            contextMenu.style.display = "none";
+        }
+    });
 });
 
-document.addEventListener("click", () => {
-    contextMenu.style.display = "none";
-});
-
-function showToast(message) {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.classList.add('show');
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
+async function updateBatteryStatus() {
+  const batteryElement = document.getElementById('battery');
+  if ('getBattery' in navigator && batteryElement) {
+    try {
+        const battery = await navigator.getBattery();
+        const update = () => {
+            const level = Math.round(battery.level * 100);
+            document.getElementById('battery-level-bar').style.width = `${level}%`;
+            document.getElementById('battery-text').textContent = `Battery: ${level}%`;
+        };
+        update();
+        battery.addEventListener('levelchange', update);
+    } catch (e) {
+        batteryElement.style.display = 'none';
+    }
+  } else if (batteryElement) {
+    batteryElement.style.display = 'none';
+  }
 }

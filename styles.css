@@ -56,6 +56,7 @@ body {
       transform: translate(-50%, -50%);
       width: min(980px, 96vw);
       text-align: center;
+      z-index: 100;
     }
 
     .date { font-size: 15px; opacity: 0.8; margin-bottom: 4px; }
