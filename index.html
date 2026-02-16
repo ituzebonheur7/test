@@ -137,6 +137,15 @@
       color: var(--accent);
       text-shadow: 0 0 12px var(--accent);
     }
+    
+    .ai-mode-btn {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+    }
 
     .shortcuts {
       display: flex;
@@ -224,6 +233,31 @@
       cursor: pointer;
     }
     #weatherWedge:hover { transform: scale(1.03); }
+    
+    #battery {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        color: var(--text-main);
+        font-size: 13px;
+        z-index: 2050;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+    #battery-icon {
+        width: 24px;
+        height: 12px;
+        border: 1px solid var(--text-main);
+        border-radius: 2px;
+        position: relative;
+    }
+    #battery-level-bar {
+        height: 100%;
+        background-color: var(--accent);
+    }
 
   </style>
 </head>
@@ -239,6 +273,13 @@
   <div id="weatherWedge" class="glass" title="Current weather (click to refresh)">
     <div id="weatherIcon">☀️</div>
     <div id="weatherText">Weather: --</div>
+  </div>
+  
+  <div id="battery" class="glass" aria-hidden="false">
+    <div id="battery-icon">
+      <div id="battery-level-bar" style="width: 100%;"></div>
+    </div>
+    <span id="battery-text">Battery: ---%</span>
   </div>
 
   <div id="socialModalOverlay" class="social-modal-overlay">
@@ -260,212 +301,35 @@
     <div class="date" id="date"></div>
     <div class="clock" id="clock"></div>
     <div class="greeting" id="greeting">Welcome, Ituze</div>
-<div class="chrome-search-wrapper">
-      <div class="chrome-search glass" id="searchSurface">
-        <input id="searchInput" placeholder="Search or type a URL" autocomplete="off" aria-label="Search or type a URL" />
-        <div class="chrome-icons">
-          <button id="voiceBtn" class="icon-btn" aria-pressed="false" aria-label="Toggle voice search">🎤</button>
-          <button id="aiModeBtn" class="icon-btn" aria-label="Toggle AI Mode">✨</button>
+    <div class="chrome-search-wrapper">
+        <div class="chrome-search glass" id="searchSurface">
+            <input id="searchInput" placeholder="Search or type a URL (try :calc 2+2 or wiki:javascript)" autocomplete="off" aria-label="Search or type a URL">
+            <div class="chrome-icons">
+              <button id="voiceBtn" class="icon-btn" aria-pressed="false" aria-label="Toggle voice search">🎤</button>
+              <button id="aiModeBtn" class="ai-mode-btn glass" aria-label="AI Mode">AI Mode</button>
+            </div>
         </div>
-      </div>
+        <div id="suggestions"></div>
     </div>
     <div class="shortcuts">
       <div class="shortcuts-row" id="shortcutsRow1"></div>
       <div class="shortcuts-row" id="shortcutsRow2"></div>
+      <div class="shortcuts-row" id="shortcutsRow3"></div>
     </div>
   </div>
 
+  <div id="shortcutModal" class="social-modal-overlay">
+      <div id="socialModal" class="social-modal glass">
+          <div class="social-modal-header">
+              <span class="social-modal-title">Edit Shortcuts</span>
+              <span id="closeShortcutEditor" class="social-modal-close">&times;</span>
+          </div>
+          <div id="shortcutEditor" class="social-links"></div>
+          <button id="saveShortcuts">Save Changes</button>
+      </div>
+  </div>
+
   <script src="core.js"></script>
-  <script>
-    const SEARCH_ENGINES = {
-      google: "https://google.com/search?q=",
-      bing: "https://bing.com/search?q=",
-      duckduckgo: "https://duckduckgo.com/?q=",
-      brave: "https://search.brave.com/search?q=",
-      startpage: "https://www.startpage.com/do/search?q=",
-      you: "https://you.com/search?q=",
-    };
-    
-    const GOOGLE_AI_MODE_URL = (q) => `https://www.google.com/search?udm=50&aep=11&q=${encodeURIComponent(q)}`;
-
-    let isAiMode = false;
-
-    function updateClock() {
-      const now = new Date();
-      document.getElementById("clock").textContent =
-        now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-      document.getElementById("date").textContent =
-        now.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" });
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    function updateGreeting() {
-      const hour = new Date().getHours();
-      const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
-      const userName = settings.userName || "Ituze";
-      let text = `Welcome, ${userName}`;
-      if (hour < 12) text = `Good morning, ${userName}`;
-      else if (hour < 18) text = `Good afternoon, ${userName}`;
-      else text = `Good evening, ${userName}`;
-      document.getElementById("greeting").textContent = text;
-    }
-    updateGreeting();
-
-    const searchInput = document.getElementById("searchInput");
-    const aiModeBtn = document.getElementById("aiModeBtn");
-
-    function getEngineUrl() {
-        const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
-        const key = settings.searchEngine || "google";
-        return SEARCH_ENGINES[key] || SEARCH_ENGINES.google;
-    }
-
-    function performSearch(query) {
-      if (!query || !query.trim()) return;
-      const trimmed = query.trim();
-
-      if (isAiMode) {
-        window.location.href = GOOGLE_AI_MODE_URL(trimmed);
-        return;
-      }
-
-      if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-        window.location.href = trimmed;
-      } else if (trimmed.includes(".") && !trimmed.includes(" ")) {
-        window.location.href = "https://" + trimmed;
-      } else {
-        const engineUrl = getEngineUrl();
-        window.location.href = engineUrl + encodeURIComponent(trimmed);
-      }
-    }
-
-    searchInput.addEventListener("keydown", e => {
-        if (e.key === "Enter") {
-            performSearch(searchInput.value);
-        }
-    });
-
-    aiModeBtn.addEventListener("click", () => {
-        isAiMode = !isAiMode;
-        aiModeBtn.classList.toggle("active", isAiMode);
-    });
-
-    const voiceBtn = document.getElementById("voiceBtn");
-    let recognition = null;
-    let isListening = false;
-    let supportsSpeech = false;
-
-    if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
-      supportsSpeech = true;
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognition = new SpeechRecognition();
-      recognition.lang = "en-US";
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
-
-      recognition.onstart = () => isListening = true;
-      recognition.onend = () => isListening = false;
-      recognition.onerror = () => isListening = false;
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        searchInput.value = transcript;
-        performSearch(transcript);
-        try { recognition.stop(); } catch (e) {}
-        isListening = false;
-      };
-    } else {
-      supportsSpeech = false;
-      voiceBtn.style.display = 'none';
-    }
-
-    voiceBtn.addEventListener("click", (e) => {
-      if (!supportsSpeech) return;
-      if (isListening) {
-        recognition.stop();
-      } else {
-          try {
-            recognition.start();
-          } catch (e) {}
-      }
-    });
-
-    const topLink = document.getElementById("topLink");
-    const socialModalOverlay = document.getElementById("socialModalOverlay");
-    const socialModalClose = document.getElementById("socialModalClose");
-
-    topLink.addEventListener("click", () => {
-        socialModalOverlay.style.display = "flex";
-    });
-
-    socialModalClose.addEventListener("click", () => {
-        socialModalOverlay.style.display = "none";
-    });
-
-    socialModalOverlay.addEventListener("click", (e) => {
-        if (e.target === socialModalOverlay) {
-            socialModalOverlay.style.display = "none";
-        }
-    });
-
-    async function fetchWeatherByCoordsSimple(lat, lon) {
-      try {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&current_weather=true&timezone=auto`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("weather failed");
-        const data = await res.json();
-        const cw = data.current_weather;
-        if (cw) {
-          return `${cw.temperature}°C, wind ${cw.windspeed} km/h`;
-        }
-      } catch (e) {
-        return null;
-      }
-      return null;
-    }
-
-    async function refreshWeatherWidget() {
-        const settings = JSON.parse(localStorage.getItem('ituzeSettings')) || {};
-        const manual = (settings.manualWeatherLocation || "").trim();
-        let summary = null;
-        if (manual) {
-            try {
-            const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(manual)}&format=json&limit=1`);
-            if (!r.ok) throw new Error("geo fail");
-            const d = await r.json();
-            if (d && d.length) {
-                const { lat, lon } = d[0];
-                summary = await fetchWeatherByCoordsSimple(lat, lon);
-            }
-            } catch (e) { /* fallback to geolocation */ }
-        }
-        if (!summary && navigator.geolocation) {
-            try {
-            const pos = await new Promise((res, rej) => {
-                const t = setTimeout(() => rej(new Error("geo timeout")), 8000);
-                navigator.geolocation.getCurrentPosition(p => { clearTimeout(t); res(p); }, err => { clearTimeout(t); rej(err); }, { timeout: 8000 });
-            });
-            if (pos && pos.coords) {
-                summary = await fetchWeatherByCoordsSimple(pos.coords.latitude, pos.coords.longitude);
-            }
-            } catch (e) { /* ignore */ }
-        }
-        if (summary) {
-            document.getElementById("weatherText").textContent = `Weather: ${summary}`;
-        } else {
-            document.getElementById("weatherText").textContent = `Weather: N/A`;
-        }
-    }
-
-    document.getElementById("weatherWedge").addEventListener("click", (e) => {
-        e.stopPropagation();
-        refreshWeatherWidget();
-    });
-
-    refreshWeatherWidget();
-    
-    window.onload = applyGlobalSettings;
-
-  </script>
+  <script src="ui.js"></script>
 </body>
 </html>
