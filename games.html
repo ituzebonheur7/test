@@ -1,41 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Game Lab - Ituze</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="shared.css">
-  <link rel="stylesheet" href="games.css">
+    <meta charset="UTF-8">
+    <title>Game Lab - Ituze</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="games.css">
 </head>
 <body oncontextmenu="return false;">
-  <canvas id="matrix"></canvas>
 
-  <a href="index.html" class="top-btn">Home</a>
+    <a href="index.html" class="top-btn">Home</a>
 
-  <div id="custom-menu">Open Game</div>
+    <canvas id="matrix"></canvas>
+    <div id="custom-menu">Open Game</div>
 
-  <div id="menu">
-    <h1 id="greeting">Welcome, Ituze</h1>
-    <div class="button-container" id="gameList">
-      <div class="game-card glass" data-url="https://ozgames.io/geometry-dash.embed">Geometry Dash</div>
-      <div class="game-card glass" data-url="https://geometrylitepc.io/slope-2.embed">Slope 2</div>
-      <div class="game-card glass" data-url="https://azgames.io/game/escape-road/">Escape Road</div>
-      <div class="game-card glass" data-url="https://azgames.io/game/traffic-road/">Traffic Rider</div>
-      <div class="game-card glass" data-url="https://azgames.io/smash-karts.embed">Smash Karts</div>
-      <div class="game-card add-btn glass">+ Add Game</div>
+    <!-- Main Hub -->
+    <div id="menu">
+        <h1 id="greeting">Game Lab</h1>
+         <div class="search-container">
+            <input type="text" id="gameSearch" placeholder="Search for a game...">
+        </div>
+        <div class="button-container" id="gameList">
+            <!-- Game cards will be populated by JS -->
+            <div class="game-card add-btn glass">+ Add New Game</div>
+        </div>
     </div>
-  </div>
 
-  <div id="stage">
-    <div id="controls">
-      <button class="btn" id="exitBtn">← Exit to Hub</button>
-      <span class="brand-text">Ituze Bonheur</span>
-      <button class="btn" id="fullscreenBtn">Fullscreen</button>
+    <!-- In-Game Stage -->
+    <div id="stage">
+        <div id="controls">
+            <div class="brand-text" id="gameTitle"></div>
+            <div>
+                <button id="exitBtn" class="btn">Exit</button>
+                <button id="fullscreenBtn" class="btn">Fullscreen</button>
+            </div>
+        </div>
+        <iframe id="gameFrame" src="" allow="fullscreen"></iframe>
     </div>
-    <iframe id="gameFrame" src="" allow="fullscreen; autoplay; camera; microphone; clipboard-write" sandbox="allow-forms allow-scripts allow-same-origin allow-popups"></iframe>
-  </div>
 
-  <script src="core.js"></script>
-  <script src="games.js"></script>
+    <!-- Scripts -->
+    <script src="core.js"></script>
+    <script src="games.js"></script>
+
 </body>
 </html>

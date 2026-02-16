@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ituze Bonheur</title>
+    <meta name="description" content="Software developer and content creator, sharing my work and projects.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <canvas id="matrix"></canvas>
+
+    <div class="container">
+        <div class="header">
+            <h1 id="greeting"></h1>
+            <p>I'm a software developer and content creator. I build things for the web and share my journey online.</p>
+        </div>
+
+        <div class="chrome-search-wrapper">
+            <div class="chrome-search glass" id="searchSurface">
+                <input id="searchInput" placeholder="Search or type a URL (try :calc 2+2 or wiki:javascript)" autocomplete="off" aria-label="Search or type a URL">
+                <div class="chrome-icons">
+                  <button id="voiceBtn" class="icon-btn" aria-pressed="false" aria-label="Toggle voice search">🎤</button>
+                  <button id="aiModeBtn" class="ai-mode-btn glass" aria-label="AI Mode">AI</button>
+                </div>
+            </div>
+            <div id="suggestions"></div>
+        </div>
+
+        <h1>Right-click anywhere!</h1>
+        <p>Try right-clicking on the background or this <a href="https://www.google.com" id="my-link">Sample Link</a>.</p>
+
+    </div>
+
+    <div id="custom-menu">
+        <ul id="menu-list" style="margin: 0; padding: 0;">
+        </ul>
+    </div>
+
+    <script src="core.js"></script>
+    <script src="ui.js"></script>
+    <script src="matrix.js"></script>
+    <script>
+        const menu = document.getElementById('custom-menu');
+        const menuList = document.getElementById('menu-list');
+
+        window.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+
+            menuList.innerHTML = '';
+
+            const isLink = e.target.closest('a');
+
+            if (isLink) {
+                const linkUrl = isLink.href;
+                addMenuItem('Open in new tab', () => window.open(linkUrl, '_blank'));
+                addMenuItem('Open in new window', () => window.open(linkUrl, '_blank', 'width=800,height=600'));
+            } else {
+                addMenuItem('Learn More', () => alert('Redirecting to Learn More page...'));
+            }
+
+            menu.style.display = 'block';
+            menu.style.left = `${e.pageX}px`;
+            menu.style.top = `${e.pageY}px`;
+        });
+
+        window.addEventListener('click', () => {
+            menu.style.display = 'none';
+        });
+
+        function addMenuItem(text, action) {
+            const li = document.createElement('li');
+            li.className = 'menu-item';
+            li.innerText = text;
+            li.onclick = action;
+            menuList.appendChild(li);
+        }
+    </script>
+</body>
+</html>
