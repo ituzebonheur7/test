@@ -17,10 +17,9 @@ function initMatrix() {
 
     let animationFrameId = null;
 
-    const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン';
     const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const nums = '0123456789';
-    const chars = katakana + latin + nums;
+    const katakana + latin + nums;
 
     let columns, drops, fontSize;
 
