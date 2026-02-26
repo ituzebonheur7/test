@@ -52,6 +52,7 @@
             display: none;
             text-align: center;
             z-index: 10;
+            padding: 20px;
         }
 
         select {
@@ -63,11 +64,12 @@
             margin-top: 15px;
             font-size: 1rem;
             outline: none;
+            width: 200px;
         }
 
         button {
-            margin-top: 20px;
-            padding: 10px 25px;
+            margin-top: 25px;
+            padding: 12px 30px;
             background: #00d4ff;
             color: #000;
             border: none;
@@ -75,6 +77,13 @@
             cursor: pointer;
             font-weight: bold;
             text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.2s ease;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background: #ffffff;
         }
 
         @keyframes glow {
@@ -91,15 +100,17 @@
 <body>
 
     <div id="redirect-ui">
-        <div class="loading-text" id="status-text">Redirecting</div>
+        <div class="loading-text">Redirecting</div>
         <div class="loader-container">
             <div class="loader-bar"></div>
         </div>
     </div>
 
     <div id="setup-ui">
-        <div class="loading-text">Setup Search Engine</div>
-        <p style="opacity: 0.7; font-size: 0.9rem;">Choose your preferred engine for this and future searches:</p>
+        <div class="loading-text">Select Search Engine</div>
+        <p style="opacity: 0.7; font-size: 0.9rem; margin-top: 10px;">
+            Choose a default engine for your searches.
+        </p>
         <select id="engine-selector">
             <option value="google">Google</option>
             <option value="bing">Bing</option>
@@ -109,40 +120,44 @@
             <option value="you">You.com</option>
         </select>
         <br>
-        <button onclick="saveAndRedirect()">Save Preference</button>
+        <button onclick="saveAndRedirect()">Save and Search</button>
     </div>
 
     <script src="/analytics.js"></script>
 
     <script>
+        // Search Engine Mapping
+        const searchEngines = {
+            google: "https://www.google.com/search?q=",
+            bing: "https://www.bing.com/search?q=",
+            duckduckgo: "https://duckduckgo.com/?q=",
+            brave: "https://search.brave.com/search?q=",
+            startpage: "https://www.startpage.com/do/search?query=",
+            you: "https://you.com/search?q="
+        };
+
         (function() {
             const urlParams = new URLSearchParams(window.location.search);
             const query = urlParams.get('q');
             const savedEngine = localStorage.getItem('defaultSearchEngine');
 
-            const searchEngines = {
-                google: "https://www.google.com/search?q=",
-                bing: "https://www.bing.com/search?q=",
-                duckduckgo: "https://duckduckgo.com/?q=",
-                brave: "https://search.brave.com/search?q=",
-                startpage: "https://www.startpage.com/do/search?query=",
-                you: "https://you.com/search?q="
-            };
-
-            // If no search query is present, just stay on the page (or redirect to home)
-            if (!query) {
-                document.getElementById('status-text').innerText = "No Search Query Found";
+            // 1. If no search term is entered, redirect back to homepage immediately
+            if (!query || query.trim() === "") {
+                window.location.replace("https://ituzebonheur.com");
                 return;
             }
 
-            // Logic: If engine exists, redirect. If not, show setup.
+            // 2. If we have a query AND a saved engine, redirect with the animation
             if (savedEngine && searchEngines[savedEngine]) {
                 const destination = searchEngines[savedEngine] + encodeURIComponent(query);
+                
+                // Slight delay so the user sees your clean loading animation
                 setTimeout(() => {
-                    window.location.href = destination;
-                }, 800); // Small delay to show off your cool animation
-            } else {
-                // First time user: Show the setup menu
+                    window.location.replace(destination);
+                }, 800);
+            } 
+            // 3. If we have a query but NO saved engine, show the setup UI
+            else {
                 document.getElementById('redirect-ui').style.display = 'none';
                 document.getElementById('setup-ui').style.display = 'block';
             }
@@ -153,20 +168,13 @@
             const query = urlParams.get('q');
             const selection = document.getElementById('engine-selector').value;
 
-            // Save choice
-            localStorage.setItem('defaultSearchEngine', selection);
+            if (selection && query) {
+                localStorage.setItem('defaultSearchEngine', selection);
 
-            // Redirect immediately
-            const searchEngines = {
-                google: "https://www.google.com/search?q=",
-                bing: "https://www.bing.com/search?q=",
-                duckduckgo: "https://duckduckgo.com/?q=",
-                brave: "https://search.brave.com/search?q=",
-                startpage: "https://www.startpage.com/do/search?query=",
-                you: "https://you.com/search?q="
-            };
-
-            window.location.href = searchEngines[selection] + encodeURIComponent(query);
+                // Redirect to the chosen engine
+                const destination = searchEngines[selection] + encodeURIComponent(query);
+                window.location.replace(destination);
+            }
         }
     </script>
 </body>
