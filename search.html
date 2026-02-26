@@ -1,181 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ituze Search | Redirecting...</title>
-    
-    <link rel="icon" href="/ituze.png" type="image/png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redirecting…</title>
+<script src="/analytics.js"></script>
+<link rel="icon" href="/ituze.png" type="image/png">
 
-    <style>
-        body { 
-            background-color: #121212; 
-            color: #ffffff; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            display: flex; 
-            flex-direction: column;
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            margin: 0; 
-            overflow: hidden;
-        }
+<style>
+:root {
+    --accent: #00d4ff;
+    --bg: #0f0f0f;
+    --panel: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.08);
+}
 
-        /* Loading Animation Styles */
-        .loading-text {
-            font-size: 1.1rem;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-bottom: 20px;
-            animation: glow 2s ease-in-out infinite;
-        }
+* {
+    box-sizing: border-box;
+}
 
-        .loader-container {
-            width: 200px;
-            height: 2px;
-            background: rgba(255, 255, 255, 0.1);
-            position: relative;
-            overflow: hidden;
-            border-radius: 2px;
-        }
+body {
+    margin: 0;
+    background: radial-gradient(circle at top, #151515, #0a0a0a);
+    color: #fff;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+}
 
-        .loader-bar {
-            position: absolute;
-            width: 50%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, #00d4ff, #ffffff, #00d4ff, transparent);
-            animation: scan 0.7s infinite linear;
-        }
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+    border-radius: 12px;
+    padding: 40px 35px;
+    width: 320px;
+    text-align: center;
+    animation: fadeIn 0.6s ease forwards;
+}
 
-        /* Setup UI Styles (Hidden by default) */
-        #setup-ui {
-            display: none;
-            text-align: center;
-            z-index: 10;
-            padding: 20px;
-        }
+.loading-text {
+    font-size: 0.9rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    opacity: 0.8;
+    margin-bottom: 25px;
+}
 
-        select {
-            padding: 12px;
-            background: #1a1a1a;
-            color: #00d4ff;
-            border: 1px solid #333;
-            border-radius: 5px;
-            margin-top: 15px;
-            font-size: 1rem;
-            outline: none;
-            width: 200px;
-        }
+.loader {
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
 
-        button {
-            margin-top: 25px;
-            padding: 12px 30px;
-            background: #00d4ff;
-            color: #000;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: transform 0.2s ease;
-        }
+.loader::before {
+    content: "";
+    position: absolute;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, var(--accent), #fff, var(--accent), transparent);
+    animation: slide 1s infinite linear;
+}
 
-        button:hover {
-            transform: scale(1.05);
-            background: #ffffff;
-        }
+#setup-ui {
+    display: none;
+}
 
-        @keyframes glow {
-            0%, 100% { opacity: 0.4; text-shadow: 0 0 0px #fff; }
-            50% { opacity: 1; text-shadow: 0 0 10px #00d4ff; }
-        }
+select {
+    margin-top: 15px;
+    padding: 12px;
+    width: 100%;
+    background: #121212;
+    border: 1px solid var(--border);
+    color: var(--accent);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+}
 
-        @keyframes scan {
-            from { left: -100%; }
-            to { left: 100%; }
-        }
-    </style>
+button {
+    margin-top: 20px;
+    padding: 12px;
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    background: #fff;
+}
+
+small {
+    display: block;
+    margin-top: 10px;
+    opacity: 0.5;
+    font-size: 0.75rem;
+}
+
+@keyframes slide {
+    from { left: -40%; }
+    to { left: 100%; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
 </head>
 <body>
 
-    <div id="redirect-ui">
-        <div class="loading-text">Redirecting</div>
-        <div class="loader-container">
-            <div class="loader-bar"></div>
-        </div>
-    </div>
+<div class="panel" id="redirect-ui">
+    <div class="loading-text">Redirecting</div>
+    <div class="loader"></div>
+</div>
 
-    <div id="setup-ui">
-        <div class="loading-text">Select Search Engine</div>
-        <p style="opacity: 0.7; font-size: 0.9rem; margin-top: 10px;">
-            Choose a default engine for your searches.
-        </p>
-        <select id="engine-selector">
-            <option value="google">Google</option>
-            <option value="bing">Bing</option>
-            <option value="duckduckgo">DuckDuckGo</option>
-            <option value="brave">Brave</option>
-            <option value="startpage">Startpage</option>
-            <option value="you">You.com</option>
-        </select>
-        <br>
-        <button onclick="saveAndRedirect()">Save and Search</button>
-    </div>
+<div class="panel" id="setup-ui">
+    <div class="loading-text">Select Search Engine</div>
+    <small>Choose your default engine for future searches.</small>
+    <select id="engine-selector">
+        <option value="google">Google</option>
+        <option value="bing">Bing</option>
+        <option value="duckduckgo">DuckDuckGo</option>
+        <option value="brave">Brave</option>
+        <option value="startpage">Startpage</option>
+        <option value="you">You.com</option>
+    </select>
+    <button onclick="saveAndRedirect()">Save & Search</button>
+</div>
 
-    <script src="/analytics.js"></script>
+<script>
+const searchEngines = {
+    google: "https://www.google.com/search?q=",
+    bing: "https://www.bing.com/search?q=",
+    duckduckgo: "https://duckduckgo.com/?q=",
+    brave: "https://search.brave.com/search?q=",
+    startpage: "https://www.startpage.com/do/search?query=",
+    you: "https://you.com/search?q="
+};
 
-    <script>
-        // Search Engine Mapping
-        const searchEngines = {
-            google: "https://www.google.com/search?q=",
-            bing: "https://www.bing.com/search?q=",
-            duckduckgo: "https://duckduckgo.com/?q=",
-            brave: "https://search.brave.com/search?q=",
-            startpage: "https://www.startpage.com/do/search?query=",
-            you: "https://you.com/search?q="
-        };
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get("q");
+    const savedEngine = localStorage.getItem("defaultSearchEngine");
 
-        (function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const query = urlParams.get('q');
-            const savedEngine = localStorage.getItem('defaultSearchEngine');
+    if (!query || !query.trim()) {
+        window.location.replace("https://ituzebonheur.com");
+        return;
+    }
 
-            // 1. If no search term is entered, redirect back to homepage immediately
-            if (!query || query.trim() === "") {
-                window.location.replace("https://ituzebonheur.com");
-                return;
-            }
+    if (savedEngine && searchEngines[savedEngine]) {
+        const destination = searchEngines[savedEngine] + encodeURIComponent(query);
+        setTimeout(() => {
+            window.location.replace(destination);
+        }, 1000);
+    } else {
+        document.getElementById("redirect-ui").style.display = "none";
+        document.getElementById("setup-ui").style.display = "block";
+    }
 
-            // 2. If we have a query AND a saved engine, redirect with the animation
-            if (savedEngine && searchEngines[savedEngine]) {
-                const destination = searchEngines[savedEngine] + encodeURIComponent(query);
-                
-                // Slight delay so the user sees your clean loading animation
-                setTimeout(() => {
-                    window.location.replace(destination);
-                }, 800);
-            } 
-            // 3. If we have a query but NO saved engine, show the setup UI
-            else {
-                document.getElementById('redirect-ui').style.display = 'none';
-                document.getElementById('setup-ui').style.display = 'block';
-            }
-        })();
+    if (savedEngine) {
+        const selector = document.getElementById("engine-selector");
+        if (selector) selector.value = savedEngine;
+    }
+})();
 
-        function saveAndRedirect() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const query = urlParams.get('q');
-            const selection = document.getElementById('engine-selector').value;
+function saveAndRedirect() {
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get("q");
+    const selection = document.getElementById("engine-selector").value;
 
-            if (selection && query) {
-                localStorage.setItem('defaultSearchEngine', selection);
+    if (!selection || !query) return;
 
-                // Redirect to the chosen engine
-                const destination = searchEngines[selection] + encodeURIComponent(query);
-                window.location.replace(destination);
-            }
-        }
-    </script>
+    localStorage.setItem("defaultSearchEngine", selection);
+    const destination = searchEngines[selection] + encodeURIComponent(query);
+    window.location.replace(destination);
+}
+</script>
+
 </body>
 </html>
