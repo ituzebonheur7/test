@@ -3,152 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ituze Search</title>
-    <link rel="icon" href="/ituze.png" type="image/png">
+    <title>Ituze Search | Redirecting...</title>
     
+    <link rel="icon" href="/ituze.png" type="image/png">
+
     <style>
-        /* Basic Matrix/Dark Theme Styling */
-        body {
-            background-color: #000;
-            color: #00FF41;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex;
+        body { 
+            background-color: #121212; 
+            color: #ffffff; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            overflow: hidden;
         }
 
-        .search-container {
+        /* Loading Animation Styles */
+        .loading-text {
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        .loader-container {
+            width: 200px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            border-radius: 2px;
+        }
+
+        .loader-bar {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, #00d4ff, #ffffff, #00d4ff, transparent);
+            animation: scan 0.7s infinite linear;
+        }
+
+        /* Setup UI Styles (Hidden by default) */
+        #setup-ui {
+            display: none;
             text-align: center;
+            z-index: 10;
         }
 
-        input[type="text"] {
+        select {
             padding: 12px;
-            width: 300px;
-            background: #111;
-            border: 1px solid #00FF41;
-            color: #00FF41;
+            background: #1a1a1a;
+            color: #00d4ff;
+            border: 1px solid #333;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 1rem;
             outline: none;
         }
 
         button {
-            padding: 12px 20px;
-            background: #00FF41;
+            margin-top: 20px;
+            padding: 10px 25px;
+            background: #00d4ff;
             color: #000;
             border: none;
+            border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
+            text-transform: uppercase;
         }
 
-        /* The First-Time Setup Modal */
-        #setup-overlay {
-            display: none; /* Hidden by default */
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
+        @keyframes glow {
+            0%, 100% { opacity: 0.4; text-shadow: 0 0 0px #fff; }
+            50% { opacity: 1; text-shadow: 0 0 10px #00d4ff; }
         }
 
-        .setup-box {
-            border: 2px solid #00FF41;
-            padding: 30px;
-            background: #000;
-            text-align: center;
-            border-radius: 8px;
-        }
-
-        select {
-            padding: 10px;
-            margin-top: 15px;
-            background: #222;
-            color: #00FF41;
-            border: 1px solid #00FF41;
+        @keyframes scan {
+            from { left: -100%; }
+            to { left: 100%; }
         }
     </style>
 </head>
 <body>
 
-    <div id="setup-overlay">
-        <div class="setup-box">
-            <h2>Welcome to Ituze Search</h2>
-            <p>Choose your default search engine to get started:</p>
-            <select id="engine-selector">
-                <option value="google">Google</option>
-                <option value="bing">Bing</option>
-                <option value="duckduckgo">DuckDuckGo</option>
-                <option value="brave">Brave</option>
-                <option value="startpage">Startpage</option>
-                <option value="you">You.com</option>
-            </select>
-            <br><br>
-            <button onclick="saveDefaultEngine()">Save and Search</button>
+    <div id="redirect-ui">
+        <div class="loading-text" id="status-text">Redirecting</div>
+        <div class="loader-container">
+            <div class="loader-bar"></div>
         </div>
     </div>
 
-    <div class="search-container">
-        <h1>ITUZE</h1>
-        <form id="search-form" onsubmit="handleSearch(event)">
-            <input type="text" id="search-input" placeholder="Enter search query..." autofocus>
-            <button type="submit">Search</button>
-        </form>
-        <p style="font-size: 0.8em; margin-top: 10px; opacity: 0.6;">
-            Engine: <span id="current-engine-display">Not Set</span>
-        </p>
+    <div id="setup-ui">
+        <div class="loading-text">Setup Search Engine</div>
+        <p style="opacity: 0.7; font-size: 0.9rem;">Choose your preferred engine for this and future searches:</p>
+        <select id="engine-selector">
+            <option value="google">Google</option>
+            <option value="bing">Bing</option>
+            <option value="duckduckgo">DuckDuckGo</option>
+            <option value="brave">Brave</option>
+            <option value="startpage">Startpage</option>
+            <option value="you">You.com</option>
+        </select>
+        <br>
+        <button onclick="saveAndRedirect()">Save Preference</button>
     </div>
 
+    <script src="/analytics.js"></script>
+
     <script>
-        const searchEngines = {
-            google: "https://www.google.com/search?q=",
-            bing: "https://www.bing.com/search?q=",
-            duckduckgo: "https://duckduckgo.com/?q=",
-            brave: "https://search.brave.com/search?q=",
-            startpage: "https://www.startpage.com/do/search?query=",
-            you: "https://you.com/search?q="
-        };
-
-        // 1. Check if user has a saved engine on page load
-        window.onload = function() {
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const query = urlParams.get('q');
             const savedEngine = localStorage.getItem('defaultSearchEngine');
-            if (!savedEngine) {
-                // First time visitor: show setup
-                document.getElementById('setup-overlay').style.display = 'flex';
-            } else {
-                document.getElementById('current-engine-display').innerText = savedEngine;
-            }
-        };
 
-        // 2. Save the selection and close the setup
-        function saveDefaultEngine() {
-            const selected = document.getElementById('engine-selector').value;
-            localStorage.setItem('defaultSearchEngine', selected);
-            document.getElementById('setup-overlay').style.display = 'none';
-            document.getElementById('current-engine-display').innerText = selected;
-            
-            // Focus the search input after setup
-            document.getElementById('search-input').focus();
-        }
+            const searchEngines = {
+                google: "https://www.google.com/search?q=",
+                bing: "https://www.bing.com/search?q=",
+                duckduckgo: "https://duckduckgo.com/?q=",
+                brave: "https://search.brave.com/search?q=",
+                startpage: "https://www.startpage.com/do/search?query=",
+                you: "https://you.com/search?q="
+            };
 
-        // 3. Handle the actual search
-        function handleSearch(event) {
-            event.preventDefault();
-            const query = document.getElementById('search-input').value;
-            const engineKey = localStorage.getItem('defaultSearchEngine');
-
-            if (!engineKey) {
-                // If they bypassed the modal somehow, show it
-                document.getElementById('setup-overlay').style.display = 'flex';
+            // If no search query is present, just stay on the page (or redirect to home)
+            if (!query) {
+                document.getElementById('status-text').innerText = "No Search Query Found";
                 return;
             }
 
-            if (query.trim() !== "") {
-                const baseUrl = searchEngines[engineKey];
-                window.location.href = baseUrl + encodeURIComponent(query);
+            // Logic: If engine exists, redirect. If not, show setup.
+            if (savedEngine && searchEngines[savedEngine]) {
+                const destination = searchEngines[savedEngine] + encodeURIComponent(query);
+                setTimeout(() => {
+                    window.location.href = destination;
+                }, 800); // Small delay to show off your cool animation
+            } else {
+                // First time user: Show the setup menu
+                document.getElementById('redirect-ui').style.display = 'none';
+                document.getElementById('setup-ui').style.display = 'block';
             }
+        })();
+
+        function saveAndRedirect() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const query = urlParams.get('q');
+            const selection = document.getElementById('engine-selector').value;
+
+            // Save choice
+            localStorage.setItem('defaultSearchEngine', selection);
+
+            // Redirect immediately
+            const searchEngines = {
+                google: "https://www.google.com/search?q=",
+                bing: "https://www.bing.com/search?q=",
+                duckduckgo: "https://duckduckgo.com/?q=",
+                brave: "https://search.brave.com/search?q=",
+                startpage: "https://www.startpage.com/do/search?query=",
+                you: "https://you.com/search?q="
+            };
+
+            window.location.href = searchEngines[selection] + encodeURIComponent(query);
         }
     </script>
 </body>
