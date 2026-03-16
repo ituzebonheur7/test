@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ituze Search</title>
+<link rel="search" type="application/opensearchdescription+xml" title="Ituze Search" href="/opensearch.xml">
+<link rel="icon" href="images/ituze.png" type="image/png">
+<script src="/analytics.js"></script>
+
+<style>
+    :root {
+        --accent: #00d4ff;
+        --bg: #0f0f0f;
+        --panel: rgba(255, 255, 255, 0.04);
+        --border: rgba(255, 255, 255, 0.08);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        background: radial-gradient(circle at top, #151515, #0a0a0a);
+        color: #fff;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    /* Hide UI by default until JS decides what to show */
+    .panel {
+        display: none; 
+        background: var(--panel);
+        border: 1px solid var(--border);
+        backdrop-filter: blur(12px);
+        border-radius: 12px;
+        padding: 40px 35px;
+        width: 320px;
+        text-align: center;
+        animation: fadeIn 0.4s ease forwards;
+    }
+
+    .loading-text {
+        font-size: 0.9rem;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        opacity: 0.8;
+        margin-bottom: 25px;
+    }
+
+    .loader {
+        height: 3px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .loader::before {
+        content: "";
+        position: absolute;
+        width: 40%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, var(--accent), #fff, var(--accent), transparent);
+        animation: slide 1s infinite linear;
+    }
+
+    select {
+        margin-top: 15px;
+        padding: 12px;
+        width: 100%;
+        background: #121212;
+        border: 1px solid var(--border);
+        color: var(--accent);
+        border-radius: 6px;
+        font-size: 0.95rem;
+        outline: none;
+        cursor: pointer;
+    }
+
+    button {
+        margin-top: 20px;
+        padding: 12px;
+        width: 100%;
+        background: var(--accent);
+        color: #000;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    button:hover {
+        transform: translateY(-2px);
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0, 212, 255, 0.2);
+    }
+
+    small {
+        display: block;
+        margin-top: 10px;
+        opacity: 0.6;
+        font-size: 0.75rem;
+        line-height: 1.4;
+    }
+
+    @keyframes slide {
+        from { left: -40%; }
+        to { left: 100%; }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+</head>
+<body>
+
+<div class="panel" id="redirect-ui">
+    <div class="loading-text">Redirecting</div>
+    <div class="loader"></div>
+</div>
+
+<div class="panel" id="setup-ui">
+    <div class="loading-text">Setup Search</div>
+    <small>Choose your default engine for Ituze. You can clear your browser data to reset this later.</small>
+    <select id="engine-selector">
+        <option value="google">Google</option>
+        <option value="googleai">Google AI Overview</option>
+        <option value="bing">Bing</option>
+        <option value="duckduckgo">DuckDuckGo</option>
+        <option value="brave">Brave Search</option>
+        <option value="startpage">Startpage</option>
+        <option value="you">You.com</option>
+        <option value="perplexity">Perplexity</option>
+    </select>
+    <button onclick="saveAndRedirect()">Save & Search</button>
+</div>
+
+<script>
+const searchEngines = {
+    google: "https://www.google.com/search?q=",
+    googleai: "https://www.google.com/aimode?q=",
+    bing: "https://www.bing.com/search?q=",
+    duckduckgo: "https://duckduckgo.com/?q=",
+    brave: "https://search.brave.com/search?q=",
+    startpage: "https://www.startpage.com/do/search?query=",
+    you: "https://you.com/search?q=",
+    perplexity: "https://www.perplexity.ai/search?q="
+};
+
+const utmSource = "ituzebonheur.com";
+
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get("q");
+    const suggest = params.get("suggest");
+
+    // 1. HANDLE BROWSER SUGGESTIONS (OpenSearch Autocomplete Hack)
+    if (suggest !== null) {
+        const term = suggest.trim();
+        if (!term) return;
+
+        // OpenSearch Standard JSON format: [Query, [Suggestions], [Descriptions], [URLs]]
+        const response = [
+            term,
+            [
+                term + " - Google Search",
+                term + " - Bing Search",
+                term + " - DuckDuckGo Search"
+            ],
+            [], // Descriptions (optional, left empty)
+            [
+                "https://www.google.com/search?q=" + encodeURIComponent(term),
+                "https://www.bing.com/search?q=" + encodeURIComponent(term),
+                "https://duckduckgo.com/?q=" + encodeURIComponent(term)
+            ]
+        ];
+
+        // Wipe the HTML completely and output pure JSON for the browser parser
+        document.write(JSON.stringify(response));
+        return; 
+    }
+
+    // 2. HANDLE EMPTY QUERIES
+    if (!query || !query.trim()) {
+        window.location.replace("https://ituzebonheur.com");
+        return;
+    }
+
+    // 3. HANDLE REDIRECTION & UI
+    const savedEngine = localStorage.getItem("defaultSearchEngine");
+
+    if (savedEngine && searchEngines[savedEngine]) {
+        // Show the loading panel
+        document.getElementById("redirect-ui").style.display = "block";
+        
+        const destination = searchEngines[savedEngine] + encodeURIComponent(query) + "&utm_source=" + encodeURIComponent(utmSource);
+        
+        // Slight 300ms delay so the UI doesn't look like a glitchy flash
+        setTimeout(() => {
+            window.location.replace(destination);
+        }, 300);
+
+    } else {
+        // Show the setup panel
+        document.getElementById("setup-ui").style.display = "block";
+    }
+})();
+
+// Function triggered by the Setup UI button
+function saveAndRedirect() {
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get("q");
+    const selection = document.getElementById("engine-selector").value;
+
+    if (!selection || !query) return;
+    
+    // Save preference
+    localStorage.setItem("defaultSearchEngine", selection);
+    
+    // Redirect instantly
+    const destination = searchEngines[selection] + encodeURIComponent(query) + "&utm_source=" + encodeURIComponent(utmSource);
+    window.location.replace(destination);
+}
+</script>
+
+</body>
+</html>
