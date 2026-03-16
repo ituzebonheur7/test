@@ -2,90 +2,84 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redirecting...</title>
     <link rel="icon" href="images/ituze.png" type="image/png">
-    
     <style>
-        /* Hidden background to prevent white flashes */
-        html, body {
-            background-color: #0a0a0a;
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
-            display: none;
-        }
+        /* Force a dark background immediately to prevent white flicker */
+        html { background: #0a0a0a; color: #fff; }
+        body { margin: 0; padding: 0; display: none; }
     </style>
-
     <script>
-        // Configuration
-        const engines = {
+        /**
+         * CONFIGURATION
+         */
+        const searchEngines = {
             google: "https://www.google.com/search?q=",
             googleai: "https://www.google.com/aimode?q=",
             bing: "https://www.bing.com/search?q=",
             duckduckgo: "https://duckduckgo.com/?q=",
             brave: "https://search.brave.com/search?q=",
-            startpage: "https://www.startpage.com/do/search?query=",
-            you: "https://you.com/search?q=",
-            perplexity: "https://www.perplexity.ai/search?q="
+            perplexity: "https://www.perplexity.ai/search?q=",
+            you: "https://you.com/search?q="
         };
 
         const utmSource = "ituzebonheur.com";
 
-        // Math Logic
-        function isMathExpression(q) {
-            const trimmed = q.trim();
-            if (/[a-zA-Z]/.test(trimmed)) return false;
-            return /^[0-9\s\+\-\*\/\.\%\(\)]+$/.test(trimmed) && /[0-9]/.test(trimmed);
-        }
-
+        /**
+         * FEATURES
+         */
         function safeCalc(expr) {
             try {
+                // Only allow numbers and basic operators
                 const sanitized = expr.replace(/[^0-9+\-*/().%\s]/g, "");
+                if (!/[0-9]/.test(sanitized)) return null;
                 const res = Function('"use strict";return (' + sanitized + ')')();
                 return (typeof res === "number" && isFinite(res)) ? res : null;
             } catch (e) { return null; }
         }
 
-        // History Management
-        function saveToHistory(query) {
-            let history = JSON.parse(localStorage.getItem("searchHistory") || "[]");
-            history = [query, ...history.filter(item => item !== query)].slice(0, 10);
-            localStorage.setItem("searchHistory", JSON.stringify(history));
+        function isMath(q) {
+            return /^[0-9\s\+\-\*\/\.\%\(\)]+$/.test(q) && /[0-9]/.test(q) && !/[a-zA-Z]/.test(q);
         }
 
+        function saveToHistory(q) {
+            try {
+                let history = JSON.parse(localStorage.getItem("ituze_history") || "[]");
+                history = [q, ...history.filter(x => x !== q)].slice(0, 20);
+                localStorage.setItem("ituze_history", JSON.stringify(history));
+            } catch (e) {}
+        }
+
+        /**
+         * MAIN REDIRECT LOGIC
+         */
         (function() {
             const params = new URLSearchParams(window.location.search);
             const query = params.get("q");
 
-            // 1. If no query, return to home
+            // 1. If no query is present, go to the main landing page
             if (!query || !query.trim()) {
                 window.location.replace("https://ituzebonheur.com");
                 return;
             }
 
             const cleanQuery = query.trim();
-
-            // 2. Local Features: Math & History
             saveToHistory(cleanQuery);
-            
+
+            // 2. Determine Search Engine
+            // Default to 'google' if nothing is saved in localStorage
+            const savedEngine = localStorage.getItem("defaultSearchEngine") || "google";
+            const baseUrl = searchEngines[savedEngine] || searchEngines.google;
+
+            // 3. Handle Math (Optional: solve it before sending to the engine)
             let finalQuery = cleanQuery;
-            if (isMathExpression(cleanQuery)) {
+            if (isMath(cleanQuery)) {
                 const result = safeCalc(cleanQuery);
-                if (result !== null) {
-                    // If it's a math expression, we can either search the result 
-                    // or keep the expression. Most users prefer searching the result.
-                    finalQuery = result.toString();
-                }
+                // If you want the search engine to see the answer + original query:
+                if (result !== null) finalQuery = `${cleanQuery} = ${result}`;
             }
 
-            // 3. Engine Selection
-            // Uses saved engine or defaults to Google
-            const savedEngine = localStorage.getItem("defaultSearchEngine") || "google";
-            const baseUrl = engines[savedEngine] || engines.google;
-
-            // 4. Final Redirect
+            // 4. Perform Redirect
             const destination = baseUrl + encodeURIComponent(finalQuery) + "&utm_source=" + encodeURIComponent(utmSource);
             window.location.replace(destination);
         })();
