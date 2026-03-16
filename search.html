@@ -1,528 +1,96 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting...</title>
+    <link rel="icon" href="images/ituze.png" type="image/png">
+    
+    <style>
+        /* Hidden background to prevent white flashes */
+        html, body {
+            background-color: #0a0a0a;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            display: none;
+        }
+    </style>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        // Configuration
+        const engines = {
+            google: "https://www.google.com/search?q=",
+            googleai: "https://www.google.com/aimode?q=",
+            bing: "https://www.bing.com/search?q=",
+            duckduckgo: "https://duckduckgo.com/?q=",
+            brave: "https://search.brave.com/search?q=",
+            startpage: "https://www.startpage.com/do/search?query=",
+            you: "https://you.com/search?q=",
+            perplexity: "https://www.perplexity.ai/search?q="
+        };
 
-<title>Ituze Search</title>
+        const utmSource = "ituzebonheur.com";
 
-<link rel="icon" href="images/ituze.png" type="image/png">
+        // Math Logic
+        function isMathExpression(q) {
+            const trimmed = q.trim();
+            if (/[a-zA-Z]/.test(trimmed)) return false;
+            return /^[0-9\s\+\-\*\/\.\%\(\)]+$/.test(trimmed) && /[0-9]/.test(trimmed);
+        }
 
-<style>
+        function safeCalc(expr) {
+            try {
+                const sanitized = expr.replace(/[^0-9+\-*/().%\s]/g, "");
+                const res = Function('"use strict";return (' + sanitized + ')')();
+                return (typeof res === "number" && isFinite(res)) ? res : null;
+            } catch (e) { return null; }
+        }
 
-body{
-margin:0;
-font-family:system-ui,Segoe UI,Arial;
-background:#0f0f0f;
-color:#fff;
-display:flex;
-align-items:center;
-justify-content:center;
-height:100vh;
-}
+        // History Management
+        function saveToHistory(query) {
+            let history = JSON.parse(localStorage.getItem("searchHistory") || "[]");
+            history = [query, ...history.filter(item => item !== query)].slice(0, 10);
+            localStorage.setItem("searchHistory", JSON.stringify(history));
+        }
 
-.container{
-width:600px;
-max-width:92%;
-}
+        (function() {
+            const params = new URLSearchParams(window.location.search);
+            const query = params.get("q");
 
-.search-box{
-position:relative;
-}
+            // 1. If no query, return to home
+            if (!query || !query.trim()) {
+                window.location.replace("https://ituzebonheur.com");
+                return;
+            }
 
-input{
-width:100%;
-padding:16px;
-font-size:18px;
-border:none;
-border-radius:8px;
-outline:none;
-background:#1c1c1c;
-color:#fff;
-}
+            const cleanQuery = query.trim();
 
-.suggestions{
-position:absolute;
-top:56px;
-width:100%;
-background:#1a1a1a;
-border-radius:8px;
-display:none;
-overflow:hidden;
-box-shadow:0 6px 20px rgba(0,0,0,.5);
-}
+            // 2. Local Features: Math & History
+            saveToHistory(cleanQuery);
+            
+            let finalQuery = cleanQuery;
+            if (isMathExpression(cleanQuery)) {
+                const result = safeCalc(cleanQuery);
+                if (result !== null) {
+                    // If it's a math expression, we can either search the result 
+                    // or keep the expression. Most users prefer searching the result.
+                    finalQuery = result.toString();
+                }
+            }
 
-.suggestion-item{
-display:flex;
-justify-content:space-between;
-padding:12px 14px;
-cursor:pointer;
-}
+            // 3. Engine Selection
+            // Uses saved engine or defaults to Google
+            const savedEngine = localStorage.getItem("defaultSearchEngine") || "google";
+            const baseUrl = engines[savedEngine] || engines.google;
 
-.suggestion-item:hover,
-.suggestion-item.active{
-background:#2a2a2a;
-}
-
-.suggestion-meta{
-opacity:.6;
-font-size:12px;
-}
-
-.footer{
-margin-top:10px;
-font-size:12px;
-opacity:.6;
-}
-
-</style>
-
+            // 4. Final Redirect
+            const destination = baseUrl + encodeURIComponent(finalQuery) + "&utm_source=" + encodeURIComponent(utmSource);
+            window.location.replace(destination);
+        })();
+    </script>
 </head>
-
 <body>
-
-<div class="container">
-
-<div class="search-box">
-
-<input id="searchInput" autocomplete="off" placeholder="Search the web">
-
-<div id="suggestionsBox" class="suggestions"></div>
-
-</div>
-
-<div class="footer">
-Ituze Search
-</div>
-
-</div>
-
-
-<script>
-
-const searchInput=document.getElementById("searchInput")
-const suggestionsBox=document.getElementById("suggestionsBox")
-
-let activeSuggestionIndex=-1
-
-
-/* SEARCH ENGINE */
-
-const searchEngine="https://www.google.com/search?q="
-
-
-/* HTML ESCAPE */
-
-function escapeHtml(text){
-
-const div=document.createElement("div")
-div.textContent=text
-return div.innerHTML
-
-}
-
-
-/* SEARCH */
-
-function performSearch(q){
-
-if(!q)return
-
-saveHistory(q)
-
-location.href=searchEngine+encodeURIComponent(q)
-
-}
-
-
-/* HISTORY */
-
-function saveHistory(q){
-
-let hist=JSON.parse(localStorage.getItem("searchHistory")||"[]")
-
-hist.unshift(q)
-
-hist=[...new Set(hist)].slice(0,10)
-
-localStorage.setItem("searchHistory",JSON.stringify(hist))
-
-}
-
-function readHistory(n){
-
-let hist=JSON.parse(localStorage.getItem("searchHistory")||"[]")
-
-return hist.slice(0,n)
-
-}
-
-
-/* INLINE SUGGESTION */
-
-function showInlineSuggestion(text,meta="",originalQuery=""){
-
-suggestionsBox.innerHTML=""
-
-const div=document.createElement("div")
-
-div.className="suggestion-item"
-
-const query=originalQuery||text
-
-div.dataset.query=query
-
-div.innerHTML=`<span>${escapeHtml(text)}</span><span class="suggestion-meta">${escapeHtml(meta)}</span>`
-
-div.addEventListener("pointerdown",e=>{
-e.preventDefault()
-hideSuggestions()
-performSearch(query)
-})
-
-suggestionsBox.appendChild(div)
-
-suggestionsBox.style.display="block"
-
-activeSuggestionIndex=-1
-
-}
-
-
-/* SAFE CALCULATOR */
-
-function safeCalc(expr){
-
-try{
-
-const sanitized=expr.replace(/[^0-9+\-*/().%\s]/g,"")
-
-if(!/^[0-9+\-*/().%\s]+$/.test(sanitized))return"invalid"
-
-const result=Function(`"use strict";return (${sanitized})`)()
-
-if(typeof result==="number"&&isFinite(result))return result
-
-return"error"
-
-}
-
-catch{
-
-return"error"
-
-}
-
-}
-
-function isMathExpression(q){
-
-if(!q)return false
-
-const trimmed=q.trim()
-
-if(/[a-zA-Z]/.test(trimmed))return false
-
-return /^[0-9+\-*/().%\s]+$/.test(trimmed)&&/[0-9]/.test(trimmed)
-
-}
-
-
-/* KEYBOARD NAVIGATION */
-
-searchInput.addEventListener("keydown",e=>{
-
-const items=[...suggestionsBox.querySelectorAll(".suggestion-item")]
-
-if(e.key==="ArrowDown"&&items.length){
-
-e.preventDefault()
-
-activeSuggestionIndex=(activeSuggestionIndex+1)%items.length
-
-updateActive(items)
-
-}
-
-else if(e.key==="ArrowUp"&&items.length){
-
-e.preventDefault()
-
-activeSuggestionIndex=(activeSuggestionIndex-1+items.length)%items.length
-
-updateActive(items)
-
-}
-
-else if(e.key==="Enter"){
-
-if(activeSuggestionIndex>=0&&items[activeSuggestionIndex]){
-
-e.preventDefault()
-
-const text=items[activeSuggestionIndex].dataset.query
-
-searchInput.value=text
-
-hideSuggestions()
-
-performSearch(text)
-
-}else{
-
-performSearch(searchInput.value)
-
-}
-
-}
-
-else if(e.key==="Escape"){
-
-searchInput.value=""
-
-hideSuggestions()
-
-}
-
-})
-
-
-function updateActive(items){
-
-items.forEach((el,i)=>{
-
-el.classList.toggle("active",i===activeSuggestionIndex)
-
-})
-
-}
-
-
-/* DEBOUNCE */
-
-function debounce(fn,delay){
-
-let t
-
-return(...args)=>{
-
-clearTimeout(t)
-
-t=setTimeout(()=>fn(...args),delay)
-
-}
-
-}
-
-
-/* SUGGESTION FETCH */
-
-let suggestionAbortController=null
-
-const fetchSuggestions=debounce(async(query)=>{
-
-if(!query||query.length<2){
-
-populateHistorySuggestions(query)
-
-return
-
-}
-
-if(isMathExpression(query)){
-
-const res=safeCalc(query)
-
-showInlineSuggestion(res+"","calc",query)
-
-return
-
-}
-
-if(suggestionAbortController)suggestionAbortController.abort()
-
-suggestionAbortController=new AbortController()
-
-try{
-
-const url=`https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(query)}`
-
-const res=await fetch(url,{signal:suggestionAbortController.signal})
-
-const data=await res.json()
-
-renderSuggestions(data[1])
-
-}
-
-catch{
-
-jsonpFallback(query)
-
-}
-
-},150)
-
-
-/* JSONP FALLBACK */
-
-function jsonpFallback(query){
-
-const cbName="jsonp_"+Date.now()
-
-const script=document.createElement("script")
-
-window[cbName]=data=>{
-
-renderSuggestions(data[1])
-
-delete window[cbName]
-
-script.remove()
-
-}
-
-script.src=`https://suggestqueries.google.com/complete/search?client=chrome&q=${encodeURIComponent(query)}&callback=${cbName}`
-
-document.body.appendChild(script)
-
-}
-
-
-/* RENDER */
-
-function renderSuggestions(results){
-
-suggestionsBox.innerHTML=""
-
-activeSuggestionIndex=-1
-
-if(results&&results.length){
-
-suggestionsBox.style.display="block"
-
-results.slice(0,6).forEach(item=>{
-
-const div=document.createElement("div")
-
-div.className="suggestion-item"
-
-div.dataset.query=item
-
-div.innerHTML=`<span>${escapeHtml(item)}</span><span class="suggestion-meta">suggest</span>`
-
-div.addEventListener("pointerdown",e=>{
-
-e.preventDefault()
-
-searchInput.value=item
-
-hideSuggestions()
-
-performSearch(item)
-
-})
-
-suggestionsBox.appendChild(div)
-
-})
-
-}
-
-else{
-
-populateHistorySuggestions(searchInput.value.trim())
-
-}
-
-}
-
-
-/* HISTORY SUGGESTIONS */
-
-function populateHistorySuggestions(query=""){
-
-const hist=readHistory(8).filter(x=>!query||x.toLowerCase().includes(query.toLowerCase()))
-
-suggestionsBox.innerHTML=""
-
-activeSuggestionIndex=-1
-
-if(hist.length){
-
-suggestionsBox.style.display="block"
-
-hist.forEach(item=>{
-
-const div=document.createElement("div")
-
-div.className="suggestion-item"
-
-div.dataset.query=item
-
-div.innerHTML=`<span>${escapeHtml(item)}</span><span class="suggestion-meta">recent</span>`
-
-div.addEventListener("pointerdown",e=>{
-
-e.preventDefault()
-
-searchInput.value=item
-
-hideSuggestions()
-
-performSearch(item)
-
-})
-
-suggestionsBox.appendChild(div)
-
-})
-
-}
-
-else{
-
-hideSuggestions()
-
-}
-
-}
-
-
-function hideSuggestions(){
-
-suggestionsBox.style.display="none"
-
-suggestionsBox.innerHTML=""
-
-activeSuggestionIndex=-1
-
-}
-
-
-/* INPUT EVENT */
-
-searchInput.addEventListener("input",e=>{
-
-const q=e.target.value.trim()
-
-if(!q){
-
-hideSuggestions()
-
-return
-
-}
-
-fetchSuggestions(q)
-
-})
-
-</script>
-
-</body>
+    </body>
 </html>
-```
