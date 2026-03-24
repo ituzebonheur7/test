@@ -3,10 +3,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeViewer - Ituze</title>
-      <script src="/analytics.js"></script>
-      <script src="/scrollbar.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ituze Studio Pro | IDE</title>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
@@ -14,335 +13,287 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        :root { 
-            --bg: #0d1117; 
-            --panel: #161b22; 
-            --border: #30363d; 
-            --text: #c9d1d9; 
-            --accent: #1f6feb; 
-            --hover: #21262d;
+        :root {
+            --bg: #0d1117;
+            --panel: rgba(22, 27, 34, 0.8);
+            --border: #30363d;
+            --text: #c9d1d9;
+            --accent: #2f81f7;
+            --danger: #f85149;
+            --success: #3fb950;
         }
 
-        body { 
-            background: var(--bg); 
-            color: var(--text); 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
-            height: 100vh; 
-            overflow: hidden; 
-            display: flex; 
-            flex-direction: column; 
+        * { box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, system-ui, sans-serif;
+            height: 100vh; margin: 0;
+            display: flex; flex-direction: column; overflow: hidden;
         }
+
+        /* Glassmorphism Header */
+        header {
+            height: 55px;
+            backdrop-filter: blur(12px);
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; z-index: 100;
+        }
+
+        .status-pill {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            color: #8b949e;
+            margin-left: 10px;
+        }
+
+        main { flex: 1; display: flex; overflow: hidden; }
+
+        #sidebar {
+            width: 260px;
+            background: #0d1117;
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column;
+        }
+
+        .file-item {
+            padding: 10px 15px;
+            font-size: 13px;
+            display: flex; align-items: center; gap: 10px;
+            cursor: pointer; color: #8b949e;
+            transition: 0.2s;
+        }
+        .file-item:hover { background: #161b22; color: #fff; }
+        .file-item.active { background: rgba(47, 129, 247, 0.1); color: var(--accent); border-right: 2px solid var(--accent); }
         
-        header { 
-            height: 50px; 
-            background: var(--panel); 
-            border-bottom: 1px solid var(--border); 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 0 15px; 
-            flex-shrink: 0; 
-            z-index: 10;
+        .file-actions { margin-left: auto; display: none; gap: 8px; }
+        .file-item:hover .file-actions { display: flex; }
+
+        #editor-container { flex: 1; min-width: 0; }
+        .CodeMirror { height: 100% !important; font-size: 14px; background: transparent !important; }
+
+        #preview-container { width: 45%; background: #fff; display: flex; flex-direction: column; }
+        #preview-frame { flex: 1; border: none; width: 100%; height: 100%; }
+
+        .btn {
+            padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border);
+            background: #21262d; color: var(--text); cursor: pointer; font-size: 12px;
+            display: flex; align-items: center; gap: 6px;
         }
+        .btn-primary { background: var(--accent); color: white; border: none; }
 
-        .logo { font-weight: bold; color: var(--accent); letter-spacing: 1px; font-size: 1.2rem; }
-
-        main { flex: 1; display: flex; overflow: hidden; position: relative; }
-
-        /* Sidebar */
-        #sidebar { width: 200px; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
-        .sidebar-header { padding: 15px 10px; font-size: 11px; text-transform: uppercase; color: #8b949e; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); }
-        .file-list { flex: 1; overflow-y: auto; }
-        .file-item { padding: 10px 15px; font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #21262d; }
-        .file-item:hover { background: var(--hover); }
-        .file-item.active { background: #1f6feb22; border-left: 2px solid var(--accent); color: #fff; }
-        .delete-file { color: #f85149; font-size: 14px; opacity: 0.5; padding: 0 5px; }
-        .delete-file:hover { opacity: 1; }
-
-        /* Editor Area */
-        #editor-container { flex: 1; display: flex; flex-direction: column; min-width: 0px; overflow: hidden; }
-        .CodeMirror { flex: 1; height: 100% !important; font-size: 14px; background: var(--bg) !important; }
-        
-        /* Resizer Gutter */
-        #resizer {
-            width: 8px;
-            cursor: col-resize;
-            background: var(--border);
-            transition: background 0.2s;
-            z-index: 5;
-            flex-shrink: 0;
-        }
+        /* Resizer */
+        #resizer { width: 4px; cursor: col-resize; background: var(--border); transition: 0.2s; }
         #resizer:hover { background: var(--accent); }
 
-        /* Preview Area */
-        #preview-container { 
-            width: 45%; 
-            display: flex; 
-            flex-direction: column; 
-            background: #fff;
-            min-width: 0px;
-            position: relative;
-            overflow: hidden;
+        @media (max-width: 768px) {
+            #resizer, #preview-container { display: none; }
         }
-        
-        .preview-toolbar {
-            background: var(--panel);
-            padding: 5px 10px;
-            display: flex;
-            justify-content: flex-end;
-            border-bottom: 1px solid var(--border);
-            flex-shrink: 0;
-        }
-
-        #preview-frame { flex: 1; border: none; width: 100%; height: 100%; background: #fff; }
-        
-        #preview-container:fullscreen { width: 100% !important; height: 100% !important; }
-
-        .btn { background: var(--border); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-left: 5px; transition: 0.2s; }
-        .btn:hover { background: #3c444d; }
-        .btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
-        .btn-primary:hover { background: #388bfd; }
-        .hidden { display: none; }
-
-        /* Overlay to prevent iframe from stealing mouse events during resize */
-        #resize-overlay { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 20; }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="logo">Ituze Bonheur</div>
-    <div class="actions">
-        <button class="btn" onclick="importAsset()">Import Image</button>
-        <button class="btn btn-primary" onclick="saveAllFiles()">Save All (Download)</button>
-    </div>
-</header>
-
-<main id="main-split">
-    <div id="sidebar">
-        <div class="sidebar-header">
-            <span>Explorer</span>
-            <span style="cursor:pointer; font-weight: bold;" onclick="createNewFile()">+ NEW FILE</span>
+    <header>
+        <div style="display:flex; align-items:center;">
+            <strong style="color:var(--accent)">Ituze Pro</strong>
+            <span id="save-status" class="status-pill">Synced</span>
         </div>
-        <div id="file-list" class="file-list"></div>
-    </div>
-
-    <div id="editor-container">
-        <textarea id="editor"></textarea>
-    </div>
-
-    <div id="resizer"></div>
-
-    <div id="preview-container">
-        <div class="preview-toolbar">
-            <button class="btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+        <div style="display:flex; gap:10px;">
+            <button class="btn" onclick="downloadProject()"><i data-lucide="archive"></i> Export ZIP</button>
+            <button class="btn btn-primary" onclick="shareLive()"><i data-lucide="share-2"></i> Deploy URL</button>
         </div>
-        <iframe id="preview-frame" sandbox="allow-scripts"></iframe>
-        <div id="resize-overlay"></div>
-    </div>
-</main>
+    </header>
 
-<input type="file" id="asset-input" class="hidden" accept="image/*">
+    <main>
+        <div id="sidebar">
+            <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:11px; text-transform:uppercase; opacity:0.5;">Explorer</span>
+                <i data-lucide="file-plus" style="width:16px; cursor:pointer;" onclick="createNewFile()"></i>
+            </div>
+            <div id="file-list"></div>
+        </div>
 
-<script>
-    let editor;
-    let files = {};
-    let activeFile = 'index.html';
+        <div id="editor-container">
+            <textarea id="editor"></textarea>
+        </div>
 
-    const defaultProject = {
-        'index.html': { content: '<!DOCTYPE html>\n<html>\n<head>\n  <link rel="stylesheet" href="style.css">\n</head>\n<body>\n  <h1>Welcome to Ituze Studio</h1>\n  <p>Edit these files and watch the magic happen!</p>\n  <button id="btn">Click Me</button>\n  <script src="script.js"><\/script>\n</body>\n</html>', type: 'text' },
-        'style.css': { content: 'body {\n  background: #f0f4f8;\n  font-family: sans-serif;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  height: 90vh;\n}\nh1 { color: #1f6feb; }', type: 'text' },
-        'script.js': { content: 'document.getElementById("btn").onclick = () => {\n  alert("Logic is working!");\n};', type: 'text' }
-    };
+        <div id="resizer"></div>
 
-    function init() {
-        const saved = localStorage.getItem('ituze_project');
-        files = saved ? JSON.parse(saved) : defaultProject;
+        <div id="preview-container">
+            <iframe id="preview-frame"></iframe>
+        </div>
+    </main>
 
-        editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
-            theme: 'dracula',
-            lineNumbers: true,
-            mode: 'htmlmixed',
-            lineWrapping: true,
-            tabSize: 2
-        });
+    <script>
+        let editor;
+        let files = {};
+        let activeFile = 'index.html';
+        let currentBlobUrl = null;
 
-        editor.on('change', () => {
-            if (files[activeFile].type === 'text') {
-                files[activeFile].content = editor.getValue();
-                saveToLocalStorage();
-                updatePreview();
-            }
-        });
+        const defaultProject = {
+            'index.html': { content: '<html>\n<head>\n <link rel="stylesheet" href="style.css">\n</head>\n<body>\n <h1>Ituze v2.0</h1>\n <button id="run">Test Logic</button>\n <script src="script.js"><\/script>\n</body>\n</html>' },
+            'style.css': { content: 'body { background: #111; color: #2f81f7; text-align: center; padding-top: 50px; font-family: sans-serif; }' },
+            'script.js': { content: 'document.getElementById("run").onclick = () => {\n  console.log("Checking for errors...");\n  throw new Error("This is a test error to show the new Debugger!");\n};' }
+        };
 
-        setupResizer();
-        renderFileList();
-        switchFile(Object.keys(files)[0]);
-    }
+        function init() {
+            const saved = localStorage.getItem('ituze_pro_v2');
+            files = saved ? JSON.parse(saved) : defaultProject;
 
-    function renderFileList() {
-        const list = document.getElementById('file-list');
-        list.innerHTML = '';
-        Object.keys(files).forEach(name => {
-            const div = document.createElement('div');
-            div.className = `file-item ${name === activeFile ? 'active' : ''}`;
-            div.innerHTML = `
-                <span onclick="switchFile('${name}')" style="flex:1">${name}</span>
-                <span class="delete-file" onclick="deleteFile('${name}')">✕</span>
-            `;
-            list.appendChild(div);
-        });
-    }
-
-    function createNewFile() {
-        const name = prompt("Enter filename (e.g. index.html, style.css, script.js):");
-        if (name && !files[name]) {
-            files[name] = { content: '', type: 'text' };
-            saveToLocalStorage();
-            renderFileList();
-            switchFile(name);
-        }
-    }
-
-    function deleteFile(name) {
-        if (Object.keys(files).length > 1) {
-            if (confirm(`Delete ${name}?`)) {
-                delete files[name];
-                if (activeFile === name) activeFile = Object.keys(files)[0];
-                saveToLocalStorage();
-                renderFileList();
-                switchFile(activeFile);
-            }
-        }
-    }
-
-    function switchFile(name) {
-        activeFile = name;
-        const file = files[name];
-        if (file.type === 'text') {
-            editor.getWrapperElement().style.display = 'block';
-            editor.setValue(file.content);
-            let mode = 'htmlmixed';
-            if (name.endsWith('.css')) mode = 'css';
-            if (name.endsWith('.js')) mode = 'javascript';
-            editor.setOption('mode', mode);
-            setTimeout(() => editor.refresh(), 1);
-        } else {
-            editor.getWrapperElement().style.display = 'none';
-        }
-        renderFileList();
-        updatePreview();
-    }
-
-    function saveToLocalStorage() {
-        localStorage.setItem('ituze_project', JSON.stringify(files));
-    }
-
-    function saveAllFiles() {
-        Object.keys(files).forEach(filename => {
-            const file = files[filename];
-            const blob = new Blob([file.content], { type: file.type === 'image' ? 'image/png' : 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.click();
-            URL.revokeObjectURL(url);
-        });
-    }
-
-    function updatePreview() {
-        const frame = document.getElementById('preview-frame');
-        let htmlFile = activeFile.endsWith('.html') ? activeFile : 'index.html';
-        if (!files[htmlFile]) htmlFile = Object.keys(files).find(f => f.endsWith('.html'));
-
-        if (htmlFile && files[htmlFile]) {
-            let content = files[htmlFile].content;
-            let cssInjections = "";
-            let jsInjections = "";
-            Object.keys(files).forEach(name => {
-                if (name.endsWith('.css')) cssInjections += `<style>${files[name].content}</style>`;
-                if (name.endsWith('.js')) jsInjections += `<script>${files[name].content}<\/script>`;
+            editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+                theme: 'dracula',
+                lineNumbers: true,
+                mode: 'htmlmixed',
+                autoCloseBrackets: true,
+                lineWrapping: true
             });
-            const finalDoc = content.replace('</head>', `${cssInjections}</head>`).replace('</body>', `${jsInjections}</body>`);
-            frame.srcdoc = finalDoc;
+
+            editor.on('change', () => {
+                updateStatus("Saving...");
+                files[activeFile].content = editor.getValue();
+                localStorage.setItem('ituze_pro_v2', JSON.stringify(files));
+                
+                // Debounce preview for performance
+                clearTimeout(window.prevTimer);
+                window.prevTimer = setTimeout(() => {
+                    updatePreview();
+                    updateStatus("Synced");
+                }, 500);
+            });
+
+            renderFileList();
+            switchFile(Object.keys(files)[0]);
+            setupResizer();
+            lucide.createIcons();
         }
-    }
 
-    function toggleFullscreen() {
-        const preview = document.getElementById('preview-container');
-        if (!document.fullscreenElement) preview.requestFullscreen();
-        else document.exitFullscreen();
-    }
-
-    // --- INFINITE RESIZER LOGIC ---
-    function setupResizer() {
-        const resizer = document.getElementById('resizer');
-        const editorCont = document.getElementById('editor-container');
-        const previewCont = document.getElementById('preview-container');
-        const overlay = document.getElementById('resize-overlay');
-        let isResizing = false;
-
-        resizer.addEventListener('mousedown', (e) => {
-            isResizing = true;
-            overlay.style.display = 'block';
-            document.body.style.cursor = 'col-resize';
-        });
-
-        window.addEventListener('mousemove', (e) => {
-            if (!isResizing) return;
+        function updatePreview() {
+            const frame = document.getElementById('preview-frame');
+            let html = files['index.html']?.content || '<h1>index.html missing</h1>';
             
-            const mainSplit = document.getElementById('main-split');
-            const sidebarWidth = document.getElementById('sidebar').offsetWidth;
-            const totalWidth = mainSplit.offsetWidth - sidebarWidth;
-            
-            let mouseX = e.clientX - sidebarWidth;
-            
-            // Calculate percentage based on mouse position relative to workspace
-            let editorWidthPercent = (mouseX / totalWidth) * 100;
+            // Fix 1: Runtime Error Overlay Injection
+            const errorCapture = `
+            <script>
+                window.onerror = function(msg, url, line) {
+                    const errDiv = document.createElement('div');
+                    errDiv.style = "position:fixed;bottom:0;left:0;right:0;background:#f85149;color:white;padding:15px;font-family:monospace;z-index:9999;font-size:12px";
+                    errDiv.innerHTML = "<strong>Runtime Error:</strong> " + msg + "<br><small>Line: " + line + "</small>";
+                    document.body.appendChild(errDiv);
+                };
+            <\/script>`;
 
-            // Clamping between 0 and 100 for "infinite" edge-to-edge feel
-            editorWidthPercent = Math.max(0, Math.min(100, editorWidthPercent));
+            let css = "";
+            let js = "";
+            Object.keys(files).forEach(name => {
+                if (name.endsWith('.css')) css += `<style>${files[name].content}</style>`;
+                if (name.endsWith('.js')) js += `<script>${files[name].content}<\/script>`;
+            });
 
-            editorCont.style.flex = `0 0 ${editorWidthPercent}%`;
-            previewCont.style.width = `${100 - editorWidthPercent}%`;
-            previewCont.style.flex = 'none';
+            const combined = html.replace('</head>', `${css}${errorCapture}</head>`)
+                                .replace('</body>', `${js}</body>`);
+
+            const blob = new Blob([combined], { type: 'text/html' });
+
+            // Fix 2: Prevent Memory Leak (Revoke old URL)
+            if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+            currentBlobUrl = URL.createObjectURL(blob);
+            frame.src = currentBlobUrl;
+        }
+
+        function switchFile(name) {
+            activeFile = name;
+            editor.setValue(files[name].content);
+            const mode = name.endsWith('.css') ? 'css' : name.endsWith('.js') ? 'javascript' : 'htmlmixed';
+            editor.setOption('mode', mode);
+            renderFileList();
+        }
+
+        // Fix 3: Rename functionality
+        function renameFile(oldName) {
+            event.stopPropagation();
+            const newName = prompt("New filename:", oldName);
+            if (!newName || files[newName] || newName === oldName) return;
             
-            // Force editor to redraw to prevent text ghosts
-            editor.refresh();
-        });
+            files[newName] = files[oldName];
+            delete files[oldName];
+            if (activeFile === oldName) activeFile = newName;
+            
+            renderFileList();
+            updatePreview();
+        }
 
-        window.addEventListener('mouseup', () => {
-            if (isResizing) {
-                isResizing = false;
-                overlay.style.display = 'none';
-                document.body.style.cursor = 'default';
-                editor.refresh();
+        function renderFileList() {
+            const list = document.getElementById('file-list');
+            list.innerHTML = '';
+            Object.keys(files).forEach(name => {
+                const div = document.createElement('div');
+                div.className = `file-item ${name === activeFile ? 'active' : ''}`;
+                div.onclick = () => switchFile(name);
+                div.innerHTML = `
+                    <i data-lucide="file-code" style="width:14px"></i>
+                    <span style="flex:1">${name}</span>
+                    <div class="file-actions">
+                        <i data-lucide="edit-3" style="width:12px" onclick="renameFile('${name}')"></i>
+                        <i data-lucide="trash-2" style="width:12px; color:var(--danger)" onclick="deleteFile('${name}')"></i>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+            lucide.createIcons();
+        }
+
+        function createNewFile() {
+            const name = prompt("Filename (e.g. style.css):");
+            if (name && !files[name]) {
+                files[name] = { content: '' };
+                switchFile(name);
             }
-        });
-    }
-
-    function importAsset() {
-        document.getElementById('asset-input').click();
-    }
-
-    document.getElementById('asset-input').onchange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                files[file.name] = { content: ev.target.result, type: 'image' };
-                saveToLocalStorage();
-                renderFileList();
-                switchFile(file.name);
-            };
-            reader.readAsDataURL(file);
         }
-    };
 
-    window.onload = init;
-</script>
+        function deleteFile(name) {
+            event.stopPropagation();
+            if (Object.keys(files).length > 1 && confirm(`Delete ${name}?`)) {
+                delete files[name];
+                switchFile(Object.keys(files)[0]);
+            }
+        }
+
+        function updateStatus(text) {
+            document.getElementById('save-status').innerText = text;
+        }
+
+        function shareLive() {
+            const data = btoa(unescape(encodeURIComponent(JSON.stringify(files))));
+            const url = window.location.href.split('?')[0] + '?data=' + data;
+            navigator.clipboard.writeText(url);
+            alert("Shareable URL (Base64) copied to clipboard!");
+        }
+
+        function setupResizer() {
+            const resizer = document.getElementById('resizer');
+            const editorCont = document.getElementById('editor-container');
+            const previewCont = document.getElementById('preview-container');
+            let isResizing = false;
+
+            resizer.addEventListener('mousedown', () => isResizing = true);
+            window.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+                let percent = (e.clientX / window.innerWidth) * 100;
+                editorCont.style.width = percent + '%';
+                previewCont.style.width = (100 - percent) + '%';
+            });
+            window.addEventListener('mouseup', () => isResizing = false);
+        }
+
+        window.onload = init;
+    </script>
 </body>
 </html>
