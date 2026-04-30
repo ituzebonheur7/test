@@ -2,66 +2,224 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-<link rel="icon" href="games.png" type="image/png">
+  <link rel="preconnect" href="/">
   <title>Game Lab - Ituze</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </script>
-<link href="styles.css" rel="stylesheet"></head>
-    </script>
+  <script src="https://ituzebonheur.com/js/router.js"></script>
+  <script src="https://ituzebonheur.com/js/screen.js"></script>
+  <style>
+    :root {
+      --accent: #00ff9c;
+      --matrix-color: #00ff9c;
+      --glass-bg: rgba(0, 0, 0, 0.25);
+      --glass-border: rgba(255, 255, 255, 0.15);
+      --text-main: #e5e7eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+      background: #020617;
+      background-image: radial-gradient(circle at top, #0b1120 0%, #020617 55%, #000 100%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      overflow: hidden;
+      user-select: none;
+    }
+    canvas {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+    }
+
+    .top-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 100px; 
+      height: 42px;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--glass-bg);
+      backdrop-filter: blur(26px);
+      -webkit-backdrop-filter: blur(26px);
+      border: 1px solid var(--glass-border);
+      border-radius: 25px;
+      cursor: pointer;
+      z-index: 1200;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .top-btn.hidden {
+      opacity: 0;
+      transform: scale(0.8);
+      pointer-events: none;
+    }
+
+    #iframePanel {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 100px; 
+      height: 42px;
+      border-radius: 25px;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 2000;
+      overflow: hidden;
+      background: #000;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 0 0 rgba(0,0,0,0);
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #iframePanel.open {
+      opacity: 1;
+      width: 400px;
+      height: 600px;
+      border-radius: 24px;
+      pointer-events: auto;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+    }
+
+    #iframePanelContent {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    #iframePanel.open #iframePanelContent {
+      opacity: 1;
+    }
+
+    #iframePanelContent iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    #menu {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 12vh;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    #greeting {
+      font-size: 3rem;
+      font-weight: 300;
+      margin-bottom: 50px;
+      letter-spacing: 2px;
+      text-shadow: 0 0 30px var(--accent);
+    }
+    .button-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+      max-width: 1200px;
+      padding-bottom: 80px;
+    }
+    .game-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(26px);
+      width: 300px;
+      padding: 35px 0;
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-align: center;
+      text-transform: uppercase;
+    }
+    .game-card:hover { border-color: var(--accent); transform: translateY(-8px); }
+    .add-btn { border-style: dashed; opacity: 0.5; }
+
+    #stage:fullscreen #controls { display: none; }
+    #stage:-webkit-full-screen #controls { display: none; }
+
+    #stage { display: none; flex-direction: column; height: 100vh; width: 100vw; z-index: 10; background: #000; }
+    #controls { background: rgba(2, 6, 23, 0.9); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
+    .btn { padding: 10px 20px; border-radius: 20px; background: var(--glass-bg); color: var(--accent); border: 1px solid var(--glass-border); cursor: pointer; font-weight: 600; }
+    #gameFrame { width: 100%; height: 100%; border: none; }
+  </style>
 </head>
 <body oncontextmenu="return false;">
 
-  <a href="https://ituzebonheur.com" class="top-btn">Home</a>
+  <button id="topLink" class="top-btn">Ituze</button>
+
+  <div id="iframePanel">
+    <div id="iframePanelContent">
+      <iframe id="profileIframe" src="https://ituzebonheur.com/me" title="Ituze"></iframe>
+    </div>
+  </div>
 
   <canvas id="matrix"></canvas>
-  <div id="custom-menu">Open Game</div>
 
   <div id="menu">
-    <h1 id="greeting">Welcome, Ituze</h1>
+    <h1 id="greeting">Visit ituzebonheur.com</h1>
     <div class="button-container" id="gameList">
       <div class="game-card" onclick="loadGame('https://ozgames.io/geometry-dash.embed')">Geometry Dash</div>
       <div class="game-card" onclick="loadGame('https://geometrylitepc.io/slope-2.embed')">Slope 2</div>
       <div class="game-card" onclick="loadGame('https://azgames.io/game/escape-road/')">Escape Road</div>
       <div class="game-card" onclick="loadGame('https://azgames.io/game/traffic-road/')">Traffic Rider</div>
-      <div class="game-card" onclick="loadGame('https://azgames.io/smash-karts.embed')">Smash Karts</div>
+      <div class="game-card" onclick="loadGame('https://skunblocked.com/')">Smash Karts</div>
       <div class="game-card add-btn" onclick="addCustomGame()">+ Add Game</div>
     </div>
   </div>
 
   <div id="stage">
     <div id="controls">
-      <button class="btn" onclick="goBack()">← Exit to Hub</button>
-      <span class="brand-text">Ituze Bonheur</span>
+      <button class="btn" onclick="goBack()">← Exit</button>
+      <span style="font-weight:700; opacity:0.8; letter-spacing:1px;">Ituze</span>
       <button class="btn" onclick="toggleFullscreen()">Fullscreen</button>
     </div>
-    <iframe id="gameFrame" src="" allow="fullscreen; autoplay; camera; microphone; clipboard-write" sandbox="allow-forms allow-scripts allow-same-origin allow-popups"></iframe>
+    <iframe id="gameFrame" src="" allow="fullscreen; autoplay; microphone; clipboard-write"></iframe>
   </div>
 
   <script>
+    const iframePanel = document.getElementById("iframePanel");
+    const topBtn = document.getElementById("topLink");
+    const profileIframe = document.getElementById("profileIframe");
+
+
+    topBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      profileIframe.src = profileIframe.src; 
+      topBtn.classList.add("hidden");
+      iframePanel.classList.add("open");
+    });
+
+
+    document.addEventListener("click", (e) => {
+      if (!iframePanel.contains(e.target) && !topBtn.contains(e.target)) {
+        iframePanel.classList.remove("open");
+        topBtn.classList.remove("hidden");
+      }
+    });
+
     const canvas = document.getElementById("matrix");
     const ctx = canvas.getContext("2d");
-    let matrixInterval = null;
     let matrixEnabled = true;
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    resizeCanvas();
-    window.addEventListener("resize", () => {
-      resizeCanvas();
-      initDrops();
-    });
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener("resize", resize);
+    resize();
 
     const chars = "ABCDEFGHIJKLMNOPRSTUVWXYZ0123456789";
     const fontSize = 16;
-    let drops = [];
-
-    function initDrops() {
-      const columns = Math.floor(canvas.width / fontSize);
-      drops = Array.from({ length: columns }, () => 1);
-    }
-    initDrops();
+    let columns = Math.floor(canvas.width / fontSize);
+    let drops = Array(columns).fill(1);
 
     function drawMatrix() {
       if (!matrixEnabled) return;
@@ -69,7 +227,6 @@
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--matrix-color").trim();
       ctx.font = fontSize + "px monospace";
-
       for (let i = 0; i < drops.length; i++) {
         const text = chars[Math.floor(Math.random() * chars.length)];
         ctx.fillText(text, i * fontSize, drops[i] * fontSize);
@@ -77,23 +234,14 @@
         drops[i]++;
       }
     }
+    setInterval(drawMatrix, 35);
 
-    function startMatrix() { if (!matrixInterval) matrixInterval = setInterval(drawMatrix, 35); }
-    function stopMatrix() { clearInterval(matrixInterval); matrixInterval = null; }
-
-    startMatrix();
-    document.addEventListener("visibilitychange", () => document.hidden ? stopMatrix() : startMatrix());
-
-    // --- Navigation & Game Loading ---
+    /* --- Game Hub Logic --- */
     function loadGame(url) {
-      if (!url) return;
-      // Auto-add https if missing
-      if (!url.startsWith('http') && !url.startsWith('//')) url = 'https://' + url;
-
       document.getElementById('gameFrame').src = url;
       document.getElementById('menu').style.display = 'none';
       document.getElementById('stage').style.display = 'flex';
-      document.querySelector('.top-btn').style.display = 'none';
+      topBtn.style.display = 'none';
       matrixEnabled = false;
     }
 
@@ -101,7 +249,7 @@
       document.getElementById('gameFrame').src = 'about:blank';
       document.getElementById('menu').style.display = 'flex';
       document.getElementById('stage').style.display = 'none';
-      document.querySelector('.top-btn').style.display = 'flex';
+      topBtn.style.display = 'flex';
       matrixEnabled = true;
     }
 
@@ -111,48 +259,17 @@
       else document.exitFullscreen();
     }
 
-    // --- Add Custom Game Logic ---
     function addCustomGame() {
-      const name = prompt("Enter Game Name:");
-      if (!name) return;
-      
-      const url = prompt("Enter Game URL:");
-      if (!url) return;
-
-      const newCard = document.createElement("div");
-      newCard.className = "game-card";
-      newCard.textContent = name;
-      // Set the attribute explicitly so the Right-Click menu logic can read it later
-      newCard.setAttribute("onclick", "loadGame('" + url + "')");
-
-      const list = document.getElementById("gameList");
-      // Insert before the 'Add' button
-      list.insertBefore(newCard, list.querySelector(".add-btn"));
-    }
-
-    // --- Right-Click Logic ---
-    const customMenu = document.getElementById('custom-menu');
-    let currentTargetUrl = '';
-
-    document.addEventListener('contextmenu', function(e) {
-      if (e.target.closest('.top-btn, .btn')) return;
-      e.preventDefault();
-      const card = e.target.closest('.game-card');
-      if (card && !card.classList.contains('add-btn')) {
-        const match = card.getAttribute('onclick').match(/'([^']+)'/);
-        if (match) {
-          currentTargetUrl = match[1];
-          customMenu.style.display = 'block';
-          customMenu.style.left = e.pageX + 'px';
-          customMenu.style.top = e.pageY + 'px';
-        }
-      } else {
-        customMenu.style.display = 'none';
+      const name = prompt("Game Name:");
+      const url = prompt("URL:");
+      if (name && url) {
+        const div = document.createElement("div");
+        div.className = "game-card";
+        div.textContent = name;
+        div.onclick = () => loadGame(url);
+        document.getElementById("gameList").insertBefore(div, document.querySelector(".add-btn"));
       }
-    });
-
-    customMenu.onclick = () => { loadGame(currentTargetUrl); customMenu.style.display = 'none'; };
-    document.addEventListener('click', () => customMenu.style.display = 'none');
+    }
   </script>
 </body>
 </html>
