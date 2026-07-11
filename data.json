@@ -1,14 +1,76 @@
 {
-  "title": "Ituze Bonheur",
-  "bio": "Developer and internet personality",
-  "links": [
-    {
-      "name": "Instagram",
-      "url": "https://instagram.com/ituzebonheur7"
+  "siteTitle": "Ituze Bonheur",
+  "brandName": "Ituze Bonheur",
+  "sidebar": {
+    "studentStatus": "Student, ",
+    "schoolName": "Chicago Public School",
+    "schoolUrl": "https://www.cps.edu?utm_source=ituzebonheur.com"
+  },
+  "sections": {
+    "about": {
+      "heading": "Welcome!",
+      "paragraphs": [
+        "My name is Ituze Bonheur, and I’m a 16-year-old male student at Mather High School. I was born on October 7th, 2009, in Zambia, a country in Southern Africa. In 2024, I moved to the United States, where I now live and continue my studies.",
+        "I enjoy exploring technology — I like learning how Android, Microsoft, Google, and Samsung products work, and I often try customizing my devices."
+      ]
     },
-    {
-      "name": "Threads",
-      "url": "https://threads.net/@ituzebonheur7"
+    "meaning": {
+      "heading": "What Does Ituze Bonheur Mean?",
+      "paragraphs": [
+        "My first name, Ituze, comes from the Kinyarwanda language and means peace or calmness. My middle name, Bonheur, is a French word that means happiness or good fortune. Together, my full name stands for peace and happiness — values that guide who I am and how I live my life.",
+        "Although I have three names, I usually share only these two. They speak for me in a simple, clear way while capturing the qualities I value most: calm, happiness, and purpose. These names are not just identifiers; they are a reflection of who I am and how I wish to interact with the world."
+      ]
+    },
+    "projects": {
+      "heading": "Projects",
+      "items": [
+        {
+          "url": "/home?utm_source=ituzebonheur.com",
+          "isDynamic": true
+        },
+        {
+          "url": "/codeviewer?utm_source=ituzebonheur.com",
+          "isDynamic": true
+        },
+        {
+          "url": "/qrcode?utm_source=ituzebonheur.com",
+          "isDynamic": true
+        }
+      ]
+    },
+    "interests": {
+      "heading": "Interests",
+      "items": [
+        "Android & OS Customization",
+        "Peace & Calmness Dynamics",
+        "Purposeful Development",
+        "Quiet Progress Strategy"
+      ]
+    },
+    "education": {
+      "heading": "Education",
+      "items": [
+        {
+          "icon": "fas fa-graduation-cap",
+          "title": "High School Diploma (In Progress)",
+          "sub": "Chicago Public School"
+        },
+        {
+          "icon": "fas fa-map-marker-alt",
+          "title": "Relocated to United States",
+          "sub": "Academic Transition · 2024"
+        },
+        {
+          "icon": "fas fa-globe-africa",
+          "title": "Early Education",
+          "sub": "Zambia, Southern Africa"
+        }
+      ]
     }
-  ]
+  },
+  "quote": "Remember, the real magic happens behind the scenes. Focus on quiet progress, not loud displays. Success grows best out of sight.",
+  "footer": {
+    "copyrightText": "© 2026 Ituze Bonheur",
+    "copyrightUrl": "https://www.google.com/search?q=Ituze+Bonheur&utm_source=ituzebonheur.com"
+  }
 }
